@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #172e27;
+  --paper: #faf3e6;
+  --paper-alt: #f1e6ce;
+  --card: #fffdf8;
+  --gold: #a07f2e;
+  --gold-soft: #d8c48c;
+  --sage: #5c7a6a;
+  --sage-dark: #3f5b4d;
+  --line: #e1d2ac;
+  --text: #2a2318;
+  --text-soft: #6e6350;
+  --shadow: 0 2px 10px rgba(23, 46, 39, 0.06);
+  --radius: 14px;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-paper-alt: var(--paper-alt);
+  --color-card: var(--card);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-sage: var(--sage);
+  --color-sage-dark: var(--sage-dark);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-text-soft: var(--text-soft);
+  --font-sans: var(--font-karla), sans-serif;
+  --font-serif: var(--font-fraunces), serif;
+  --font-arabic: var(--font-amiri), serif;
+  --radius-card: var(--radius);
+  --shadow-card: var(--shadow);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--text);
+  font-family: var(--font-karla), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 60px;
+}
+
+::selection {
+  background: var(--gold-soft);
+}

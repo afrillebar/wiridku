@@ -1,0 +1,40 @@
+{
+  "name": "wiridku",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "db:migrate": "node --env-file=.env.local scripts/migrate.mjs",
+    "db:seed": "node --env-file=.env.local scripts/load-seed.mjs",
+    "db:admin": "node --env-file=.env.local scripts/bootstrap-admin.mjs",
+    "seed:build": "node scripts/seed-from-reference.mjs",
+    "test:rls": "node --env-file=.env.local scripts/test-rls.mjs",
+    "verify:content": "node scripts/verify-quran.mjs && node scripts/verify-hadith.mjs",
+    "db:recordings": "node --env-file=.env.local scripts/build-recordings.mjs",
+    "db:tts": "node --env-file=.env.local scripts/generate-tts-audio.mjs",
+    "db:youtube": "node --env-file=.env.local scripts/load-youtube.mjs"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.3",
+    "next": "16.4.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.1",
+    "msedge-tts": "^2.1.0",
+    "pg": "^8.23.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
