@@ -117,11 +117,41 @@ export function DataTable({
   return <Frame head={head} colSpan={colSpan} empty={empty} state={state} body={body} />;
 }
 
-export type AccessLogRow = { id: string; time: string; who: string; place: string; device: string; event: string };
+export type AccessLogRow = { id: string; visitor: string; time: string; who: string; place: string; device: string; event: string };
+
+type VisitGroup = { id: string; who: string; latest: AccessLogRow; events: AccessLogRow[] };
+
+// Rows arrive newest first, so the first sighting of a visitor is their latest visit.
+function groupVisits(rows: AccessLogRow[]): VisitGroup[] {
+  const order: string[] = [];
+  const map = new Map<string, AccessLogRow[]>();
+  for (const row of rows) {
+    const list = map.get(row.visitor);
+    if (list) list.push(row);
+    else {
+      map.set(row.visitor, [row]);
+      order.push(row.visitor);
+    }
+  }
+  return order.map((id) => {
+    const events = map.get(id)!;
+    return { id, who: events[0].who, latest: events[0], events };
+  });
+}
 
 export function AccessLogTable({ rows }: { rows: AccessLogRow[] }) {
-  const state = usePager(rows.length, 10);
-  const slice = rows.slice(state.from, state.to);
+  const groups = groupVisits(rows);
+  const state = usePager(groups.length, 10);
+  const slice = groups.slice(state.from, state.to);
+  const [open, setOpen] = useState<Set<string>>(new Set());
+  const toggle = (id: string) =>
+    setOpen((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
   return (
     <Frame
       colSpan={5}
@@ -129,22 +159,49 @@ export function AccessLogTable({ rows }: { rows: AccessLogRow[] }) {
       state={state}
       head={
         <tr>
-          <th>Waktu (WIB)</th>
           <th>Siapa</th>
+          <th>Terakhir (WIB)</th>
           <th>Lokasi</th>
           <th>Perangkat</th>
           <th>Kejadian</th>
         </tr>
       }
-      body={slice.map((r) => (
-        <tr key={r.id}>
-          <td data-label="Waktu">{r.time}</td>
-          <td data-label="Siapa">{r.who}</td>
-          <td data-label="Lokasi">{r.place}</td>
-          <td data-label="Perangkat">{r.device}</td>
-          <td className="wide">{r.event}</td>
-        </tr>
-      ))}
+      body={slice.flatMap((g) => {
+        const shown = open.has(g.id);
+        const summary = (
+          <tr key={g.id}>
+            <td className="wide" data-label="Siapa">
+              <button type="button" className="btn small log-toggle" aria-expanded={shown} onClick={() => toggle(g.id)}>
+                {shown ? "Tutup" : "Lihat"}
+              </button>
+              {g.who}
+            </td>
+            <td data-label="Terakhir">{g.latest.time}</td>
+            <td data-label="Lokasi">{g.latest.place}</td>
+            <td data-label="Perangkat">{g.latest.device}</td>
+            <td data-label="Kejadian">{g.events.length} kejadian</td>
+          </tr>
+        );
+        if (!shown) return [summary];
+        return [
+          summary,
+          <tr key={`${g.id}-detail`} className="log-detail">
+            <td colSpan={5}>
+              <ul className="log-events">
+                {g.events.map((r) => (
+                  <li key={r.id}>
+                    <time>{r.time}</time>
+                    <span>{r.event}</span>
+                    <small>
+                      {r.place} · {r.device}
+                    </small>
+                  </li>
+                ))}
+              </ul>
+            </td>
+          </tr>,
+        ];
+      })}
     />
   );
 }

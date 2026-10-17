@@ -218,6 +218,7 @@ export default async function TrafficPage(props: PageProps<"/putrazea/traffic">)
       <AccessLogTable
         rows={rows.map((r, i) => ({
           id: `${r.created_at}-${i}`,
+          visitor: r.user_id ?? r.visitor_id,
           time: new Date(r.created_at).toLocaleString("id-ID", { timeZone: TZ, dateStyle: "short", timeStyle: "medium" }),
           who: who(r),
           place: place(r),

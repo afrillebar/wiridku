@@ -269,6 +269,33 @@
 .admin tr[hidden] {
   display: none !important;
 }
+.log-toggle {
+  margin-right: 8px;
+}
+.log-detail td {
+  background: var(--paper-alt);
+}
+.log-events {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.log-events li {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: 2px 12px;
+  font-size: 0.84rem;
+}
+.log-events time {
+  color: var(--text-soft);
+}
+.log-events small {
+  grid-column: 2;
+  color: var(--text-soft);
+}
 
 /* ---------- Forms ---------- */
 .admin form.form {
@@ -883,6 +910,12 @@
   }
   .admin td[colspan] {
     display: block;
+  }
+  .log-events li {
+    grid-template-columns: 1fr;
+  }
+  .log-events small {
+    grid-column: 1;
   }
   .row-actions {
     gap: 8px;
