@@ -7,6 +7,7 @@ import { AudioBar, AudioButton, AudioProvider, OfflineControl, type Track } from
 import { InstallPrompt } from "./install-prompt";
 import { YoutubeEmbed } from "./youtube-embed";
 import { TasbihBox } from "./tasbih-box";
+import { splitSurahParts } from "@/lib/surah-parts";
 import { track } from "@/lib/track";
 
 const MIN_STEP = -2;
@@ -118,6 +119,40 @@ export function WiridApp({ phases, preview = false }: { phases: Phase[]; preview
   );
 }
 
+function Reading({ r }: { r: Recitation }) {
+  const parts = splitSurahParts(r);
+  if (!parts) {
+    return (
+      <>
+        {r.arabic_text && (
+          <p className="arabic" dir="rtl" lang="ar">
+            {r.arabic_text}
+          </p>
+        )}
+        {r.transliteration && <p className="latin">{r.transliteration}</p>}
+        {r.translation && (
+          <>
+            <p className="arti-label">Arti</p>
+            <p className="arti">{r.translation}</p>
+          </>
+        )}
+      </>
+    );
+  }
+
+  return parts.map((part) => (
+    <section key={part.name || part.arabic} className="reading">
+      {part.name && <p className="reading-name">{part.name}</p>}
+      <p className="arabic" dir="rtl" lang="ar">
+        {part.arabic}
+      </p>
+      <p className="latin">{part.latin}</p>
+      <p className="arti-label">Arti</p>
+      <p className="arti">{part.translation}</p>
+    </section>
+  ));
+}
+
 function Card({ r, done, onToggle }: { r: Recitation; done: boolean; onToggle: () => void }) {
   const isTasbih = r.kind === "tasbih" && r.tasbih_config;
   const showReference = r.reference_text && r.reference_text !== r.chip_label;
@@ -144,18 +179,7 @@ function Card({ r, done, onToggle }: { r: Recitation; done: boolean; onToggle: (
       {isTasbih && <TasbihBox steps={r.tasbih_config!.steps} />}
       {isTasbih && <p className="arti-label closing-label">Bacaan penyempurna (1×)</p>}
 
-      {r.arabic_text && (
-        <p className="arabic" dir="rtl" lang="ar">
-          {r.arabic_text}
-        </p>
-      )}
-      {r.transliteration && <p className="latin">{r.transliteration}</p>}
-      {r.translation && (
-        <>
-          <p className="arti-label">Arti</p>
-          <p className="arti">{r.translation}</p>
-        </>
-      )}
+      <Reading r={r} />
       {showReference && <p className="source">Sumber: {r.reference_text}</p>}
       {track && !track.audio.synthetic && track.audio.reciter && <p className="source">Qari: {track.audio.reciter}</p>}
       {r.source === "youtube" && r.youtube_id && <YoutubeEmbed id={r.youtube_id} start={r.youtube_start} end={r.youtube_end} title={r.title} />}

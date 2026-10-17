@@ -6,6 +6,7 @@ import { audit } from "@/lib/audit";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { AUDIO_MAX_MB_LIMIT } from "@/lib/settings";
 import { AUDIO_SOURCE_LABEL, isAudioSource, type AudioSource } from "@/lib/audio-source";
+import { isSiteTheme, SITE_THEMES } from "@/lib/site-theme";
 import { text, type FormState } from "@/lib/form";
 
 export async function saveSettings(_prev: FormState, fd: FormData): Promise<FormState> {
@@ -27,6 +28,21 @@ export async function saveSettings(_prev: FormState, fd: FormData): Promise<Form
 
   await audit(supabase, staff, "settings", null, "update", { audio_max_mb: maxMb });
   return { ok: "Pengaturan disimpan." };
+}
+
+export async function saveSiteTheme(_prev: FormState, fd: FormData): Promise<FormState> {
+  const staff = await requireAdmin();
+  const id = text(fd, "theme");
+  if (!isSiteTheme(id)) return { error: "Tema tidak valid." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("app_settings").upsert({ key: "site_theme", value: { id }, updated_at: new Date().toISOString(), updated_by: staff.id });
+  if (error) return { error: error.message };
+
+  await audit(supabase, staff, "settings", null, "update", { site_theme: id });
+  updateTag("content");
+  const label = SITE_THEMES.find((theme) => theme.id === id)?.label ?? id;
+  return { ok: `Tema tampilan depan: ${label}.` };
 }
 
 export async function saveAudioSource(_prev: FormState, fd: FormData): Promise<FormState> {

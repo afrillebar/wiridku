@@ -1,6 +1,7 @@
 "use client";
 
 import { startTransition, useActionState, type ReactNode } from "react";
+import { FormBusy } from "@/components/admin/busy";
 import type { FormState } from "@/lib/form";
 
 // ponytail: onSubmit instead of the form action prop, because React 19 resets uncontrolled fields after an action and would wipe the user's input on a validation error
@@ -26,6 +27,7 @@ export function ActionForm({
         startTransition(() => run(fd));
       }}
     >
+      <FormBusy label="Menyimpan…" />
       {state?.error && (
         <p className="msg error" role="alert">
           {state.error}

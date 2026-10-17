@@ -3,7 +3,7 @@ header.top {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(250, 243, 230, 0.94);
+  background: var(--paper-bar);
   backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--line);
 }
@@ -66,7 +66,7 @@ h1 {
 .phase-tab.active {
   background: var(--sage-dark);
   border-color: var(--sage-dark);
-  color: #fcf8ef;
+  color: var(--on-sage);
 }
 .font-ctrl {
   display: flex;
@@ -153,7 +153,7 @@ section.phase:first-child {
 }
 .card.done {
   border-color: var(--gold);
-  background: #fffcf4;
+  background: var(--done);
 }
 .card-top {
   display: flex;
@@ -221,12 +221,27 @@ section.phase:first-child {
 }
 .latin {
   font-style: italic;
-  color: #4b4130;
+  color: var(--latin);
   font-size: 0.92rem;
   line-height: 1.6;
   margin: 0 0 10px;
   padding-left: 12px;
   border-left: 2.5px solid var(--gold-soft);
+}
+.reading + .reading {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.reading-name {
+  margin: 0;
+  font-family: var(--font-fraunces), serif;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--sage-dark);
+}
+.reading .arabic {
+  margin-top: 4px;
 }
 .arti-label {
   font-size: 0.68rem;
@@ -288,7 +303,7 @@ section.phase:first-child {
 }
 .tasbih-progress {
   height: 6px;
-  background: #e7dab6;
+  background: var(--track);
   border-radius: 999px;
   overflow: hidden;
   margin: 8px 0 12px;
@@ -306,7 +321,7 @@ section.phase:first-child {
 }
 .tap-btn {
   background: var(--sage-dark);
-  color: #fcf8ef;
+  color: var(--on-sage);
   border: none;
   font-weight: 700;
   font-size: 0.85rem;
@@ -443,7 +458,7 @@ footer .rule {
 }
 .install-btn.primary {
   background: var(--sage-dark);
-  color: #fcf8ef;
+  color: var(--on-sage);
 }
 .install-btn.secondary {
   background: transparent;
@@ -473,7 +488,7 @@ footer .rule {
 .audio-btn.active {
   background: var(--sage-dark);
   border-color: var(--sage-dark);
-  color: #fcf8ef;
+  color: var(--on-sage);
 }
 .audio-btn:focus-visible,
 .check-btn:focus-visible,
@@ -500,7 +515,7 @@ footer .rule {
   margin: 0 0 6px;
   padding: 8px 12px;
   border-radius: 10px;
-  background: rgba(92, 122, 106, 0.12);
+  background: var(--sage-wash);
   color: var(--sage-dark);
 }
 .audio-count-label {
@@ -540,7 +555,7 @@ footer .rule {
 }
 .audio-error {
   font-size: 0.78rem;
-  color: #8a2d1f;
+  color: var(--danger);
   margin: -2px 0 10px;
 }
 .offline-row {
@@ -576,7 +591,7 @@ footer .rule {
   font-weight: 700;
 }
 .offline-status.err {
-  color: #8a2d1f;
+  color: var(--danger);
   font-weight: 700;
 }
 .spin {

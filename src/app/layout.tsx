@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Amiri, Fraunces, Karla } from "next/font/google";
+import { getSiteTheme } from "@/lib/content";
+import { SITE_THEMES } from "@/lib/site-theme";
 import "./globals.css";
 import "./wirid.css";
+import "./site-theme.css";
 
 const fraunces = Fraunces({
   variable: "--font-fraunces",
@@ -36,17 +39,21 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = {
-  themeColor: "#5C7A6A",
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 5,
-};
+export async function generateViewport(): Promise<Viewport> {
+  const theme = await getSiteTheme();
+  return {
+    themeColor: SITE_THEMES.find((item) => item.id === theme)?.color ?? "#5C7A6A",
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+  };
+}
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const theme = await getSiteTheme();
   return (
-    <html lang="id" className={`${fraunces.variable} ${karla.variable} ${amiri.variable}`}>
-      <body>{children}</body>
+    <html lang="id" data-site-theme={theme} className={`${fraunces.variable} ${karla.variable} ${amiri.variable}`}>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

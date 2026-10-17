@@ -1,4 +1,4 @@
-import { saveAudioSource, saveCardAudioSources, saveSettings } from "@/actions/settings";
+import { saveAudioSource, saveCardAudioSources, saveSettings, saveSiteTheme } from "@/actions/settings";
 import Link from "next/link";
 import { ActionForm } from "@/components/admin/action-form";
 import { DataTable } from "@/components/admin/data-table";
@@ -6,15 +6,17 @@ import { SourceBadges, type AudioKinds } from "@/components/admin/lists";
 import { requireAdmin } from "@/lib/auth";
 import { AUDIO_SOURCE_LABEL, parseAudioSource, resolveAudioSource, type AudioSource } from "@/lib/audio-source";
 import { AUDIO_MAX_MB_LIMIT, getAudioMaxMb } from "@/lib/settings";
+import { parseSiteTheme, SITE_THEMES } from "@/lib/site-theme";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
-  const [, maxMb, { data: files }, { data: sourceRow }, { data: cards }] = await Promise.all([
+  const [, maxMb, { data: files }, { data: sourceRow }, { data: themeRow }, { data: cards }] = await Promise.all([
     requireAdmin(),
     getAudioMaxMb(supabase),
     supabase.from("audio_files").select("file_size_bytes"),
     supabase.from("app_settings").select("value").eq("key", "audio_source").maybeSingle(),
+    supabase.from("app_settings").select("value").eq("key", "site_theme").maybeSingle(),
     supabase
       .from("recitations")
       .select("id, title, sort_order, audio_source, youtube_id, audio_files(synthetic, reciter_name, duration_seconds), phases!inner(title, sort_order)")
@@ -24,6 +26,7 @@ export default async function SettingsPage() {
       .eq("phases.is_active", true),
   ]);
   const source = parseAudioSource(sourceRow?.value);
+  const theme = parseSiteTheme(themeRow?.value);
   const totalBytes = (files ?? []).reduce((sum, f) => sum + Number(f.file_size_bytes), 0);
 
   type File = { synthetic: boolean; reciter_name: string | null; duration_seconds: number | null };
@@ -53,6 +56,28 @@ export default async function SettingsPage() {
   return (
     <>
       <h1>Pengaturan</h1>
+
+      <h2>Tema tampilan depan</h2>
+      <p className="muted">Warna yang dilihat pengunjung di situs. Panel admin tidak ikut berubah; tema panel ada di kanan atas.</p>
+      <ActionForm action={saveSiteTheme} submitLabel="Simpan tema">
+        <fieldset className="source-choice">
+          <legend>Pilihan warna situs</legend>
+          {SITE_THEMES.map((item) => (
+            <label key={item.id} className="check source-option">
+              <input type="radio" name="theme" value={item.id} defaultChecked={theme === item.id} />
+              <span>
+                <strong>{item.label}</strong>
+                <small>{item.hint}</small>
+                <span className="theme-swatch" aria-hidden="true">
+                  {item.swatch.map((color) => (
+                    <i key={color} style={{ background: color }} />
+                  ))}
+                </span>
+              </span>
+            </label>
+          ))}
+        </fieldset>
+      </ActionForm>
 
       <h2>Sumber untuk semua</h2>
       <p className="muted">

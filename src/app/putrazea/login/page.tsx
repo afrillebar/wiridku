@@ -4,12 +4,14 @@ import { requestPasswordReset, signIn } from "@/actions/auth";
 import { ActionForm } from "@/components/admin/action-form";
 import { Flash } from "@/components/admin/flash";
 import { getStaff } from "@/lib/auth";
+import { ThemeSwitch } from "@/components/admin/theme-switch";
 
 export default function LoginPage(props: PageProps<"/putrazea/login">) {
   return (
     <main className="login">
       <h1>Wiridku</h1>
       <p className="muted">Masuk ke panel admin</p>
+      <ThemeSwitch />
       <Suspense>
         <Gate />
         <Flash searchParams={props.searchParams} />

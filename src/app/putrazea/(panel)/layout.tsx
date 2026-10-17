@@ -3,6 +3,7 @@ import Link from "next/link";
 import { signOut } from "@/actions/auth";
 import { requireStaff } from "@/lib/auth";
 import { Nav, type NavItem } from "@/components/admin/nav";
+import { ThemeSwitch } from "@/components/admin/theme-switch";
 
 // ponytail: header and page content are siblings, so they fetch in parallel instead of the page waiting for the header's session lookup
 export default function PanelLayout({ children }: LayoutProps<"/putrazea">) {
@@ -44,6 +45,7 @@ async function Header() {
           <span>
             {staff.email} · {staff.role}
           </span>
+          <ThemeSwitch />
           <Link prefetch={false} href="/" className="btn small" target="_blank">
             Lihat situs
           </Link>

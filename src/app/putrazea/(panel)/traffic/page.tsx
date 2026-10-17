@@ -44,6 +44,29 @@ const country = (c: string | null) => {
   }
 };
 const place = (r: Row) => [r.city, country(r.country)].filter(Boolean).join(", ") || "Tidak diketahui";
+
+async function loadRows(supabase: Awaited<ReturnType<typeof createClient>>, since: Date) {
+  const columns = "id, created_at, visitor_id, user_id, event, path, slug, country, region, city, device, browser, os, referrer";
+  const page = (from: number) =>
+    supabase.from("visit_events").select(columns).gte("created_at", since.toISOString()).order("created_at", { ascending: false }).range(from, from + PAGE - 1);
+  const rows: Row[] = [];
+  for (let from = 0; from < MAX_ROWS; ) {
+    const width = from === 0 ? 1 : 4;
+    const chunks = await Promise.all(Array.from({ length: width }, (_, i) => page(from + i * PAGE)));
+    let done = false;
+    for (const { data } of chunks) {
+      const batch = (data ?? []) as Row[];
+      rows.push(...batch);
+      if (batch.length < PAGE) {
+        done = true;
+        break;
+      }
+    }
+    if (done) break;
+    from += width * PAGE;
+  }
+  return rows;
+}
 const dayKey = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: TZ });
 const hourOf = (d: Date) => Number(d.toLocaleString("en-GB", { timeZone: TZ, hour: "2-digit", hour12: false })) % 24;
 
@@ -78,18 +101,7 @@ export default async function TrafficPage(props: PageProps<"/putrazea/traffic">)
   const supabase = await createClient();
   await requireAdmin();
 
-  // ponytail: the API returns at most 1000 rows per request, so page through the range
-  const rows: Row[] = [];
-  for (let from = 0; from < MAX_ROWS; from += PAGE) {
-    const { data } = await supabase
-      .from("visit_events")
-      .select("id, created_at, visitor_id, user_id, event, path, slug, country, region, city, device, browser, os, referrer")
-      .gte("created_at", since.toISOString())
-      .order("created_at", { ascending: false })
-      .range(from, from + PAGE - 1);
-    rows.push(...((data ?? []) as Row[]));
-    if (!data || data.length < PAGE) break;
-  }
+  const rows = await loadRows(supabase, since);
 
   const userIds = [...new Set(rows.map((r) => r.user_id).filter((v): v is string => !!v))];
   const slugs = [...new Set(rows.map((r) => r.slug).filter((v): v is string => !!v))];
@@ -223,6 +235,7 @@ export default async function TrafficPage(props: PageProps<"/putrazea/traffic">)
         rows={rows.map((r) => ({
           id: String(r.id),
           visitor: r.user_id ?? r.visitor_id,
+          kind: r.user_id ? "user" : "visitor",
           time: new Date(r.created_at).toLocaleString("id-ID", { timeZone: TZ, dateStyle: "short", timeStyle: "medium" }),
           who: who(r),
           place: place(r),

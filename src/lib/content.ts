@@ -2,6 +2,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { assignNumbers } from "@/lib/numbering";
 import { DEFAULT_AUDIO_SOURCE, parseAudioSource, resolveAudioSource, type AudioSource } from "@/lib/audio-source";
+import { parseSiteTheme, type SiteThemeId } from "@/lib/site-theme";
 
 export type TasbihStep = { arabic: string; transliteration: string; target: number };
 
@@ -134,6 +135,15 @@ export async function getPublishedPhases(): Promise<Phase[]> {
     .order("sort_order", { referencedTable: "recitations" });
   if (error) throw new Error(`Supabase: ${error.message}`);
   return withAudioUrls(db, data as unknown as RawPhase[], await getAudioSource());
+}
+
+export async function getSiteTheme(): Promise<SiteThemeId> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("content");
+
+  const { data } = await createAnonClient().from("app_settings").select("value").eq("key", "site_theme").maybeSingle();
+  return parseSiteTheme(data?.value);
 }
 
 export async function getAudioSource(): Promise<AudioSource> {

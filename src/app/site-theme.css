@@ -1,0 +1,148 @@
+html[data-site-theme="langit"],
+html[data-site-theme="langit"] .admin .preview {
+  --ink: #1a2c44;
+  --paper: #f4f7fb;
+  --paper-alt: #e4edf6;
+  --card: #ffffff;
+  --gold: #3d7ea6;
+  --gold-soft: #b7d3e6;
+  --sage: #4e7c9a;
+  --sage-dark: #2c5874;
+  --line: #d3e0ec;
+  --text: #1c2836;
+  --text-soft: #5c6d80;
+  --shadow: 0 2px 10px rgba(26, 44, 68, 0.06);
+  --paper-bar: rgba(244, 247, 251, 0.94);
+  --on-sage: #f7fbff;
+  --done: #f7fbff;
+  --latin: #3d4d60;
+  --track: #c5d7e8;
+  --sage-wash: rgba(44, 88, 116, 0.12);
+  --danger: #8a2d1f;
+  color: var(--text);
+  background: var(--paper);
+  color-scheme: light;
+}
+
+html[data-site-theme="zaitun"],
+html[data-site-theme="zaitun"] .admin .preview {
+  --ink: #2a3318;
+  --paper: #f3f1e4;
+  --paper-alt: #e5e3cf;
+  --card: #fbfaf3;
+  --gold: #8a6b2f;
+  --gold-soft: #d4c48a;
+  --sage: #6a7a3a;
+  --sage-dark: #3f4d22;
+  --line: #d5d1b4;
+  --text: #2c2a1c;
+  --text-soft: #6a6754;
+  --shadow: 0 2px 10px rgba(42, 51, 24, 0.06);
+  --paper-bar: rgba(243, 241, 228, 0.94);
+  --on-sage: #f7f6ee;
+  --done: #f7f6ee;
+  --latin: #4a4834;
+  --track: #d5d1b4;
+  --sage-wash: rgba(63, 77, 34, 0.12);
+  --danger: #8a2d1f;
+  color: var(--text);
+  background: var(--paper);
+  color-scheme: light;
+}
+
+html[data-site-theme="senja"],
+html[data-site-theme="senja"] .admin .preview {
+  --ink: #3b241c;
+  --paper: #fbf3ee;
+  --paper-alt: #f3e2d6;
+  --card: #fffaf7;
+  --gold: #c46b45;
+  --gold-soft: #e7c2ae;
+  --sage: #a35b48;
+  --sage-dark: #7a3e30;
+  --line: #ead5c8;
+  --text: #3a2a24;
+  --text-soft: #7a645b;
+  --shadow: 0 2px 10px rgba(59, 36, 28, 0.06);
+  --paper-bar: rgba(251, 243, 238, 0.94);
+  --on-sage: #fff8f4;
+  --done: #fff6f1;
+  --latin: #5c463c;
+  --track: #ead5c8;
+  --sage-wash: rgba(122, 62, 48, 0.12);
+  --danger: #8a2d1f;
+  color: var(--text);
+  background: var(--paper);
+  color-scheme: light;
+}
+
+html[data-site-theme="malam"],
+html[data-site-theme="malam"] .admin .preview {
+  --ink: #e7f2eb;
+  --paper: #121816;
+  --paper-alt: #1c2823;
+  --card: #182420;
+  --gold: #d4b56a;
+  --gold-soft: #6a5730;
+  --sage: #8fb3a0;
+  --sage-dark: #2f5c48;
+  --line: #31443b;
+  --text: #e4eee8;
+  --text-soft: #a9bdb3;
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  --paper-bar: rgba(18, 24, 22, 0.94);
+  --on-sage: #f3f7f4;
+  --done: #1a2822;
+  --latin: #c5d4cc;
+  --track: #2a3d34;
+  --sage-wash: rgba(143, 179, 160, 0.16);
+  --danger: #f0a598;
+  color: var(--text);
+  background: var(--paper);
+  color-scheme: dark;
+}
+
+/* The public theme paints the page. The admin shell stays on kertas unless its own switch says otherwise. */
+html[data-site-theme] .admin {
+  --ink: #172e27;
+  --paper: #faf3e6;
+  --paper-alt: #f1e6ce;
+  --card: #fffdf8;
+  --gold: #a07f2e;
+  --gold-soft: #d8c48c;
+  --sage: #5c7a6a;
+  --sage-dark: #3f5b4d;
+  --line: #e1d2ac;
+  --text: #2a2318;
+  --text-soft: #6e6350;
+  --shadow: 0 2px 10px rgba(23, 46, 39, 0.06);
+  --paper-bar: rgba(250, 243, 230, 0.94);
+  --on-sage: #fcf8ef;
+  --done: #fffcf4;
+  --latin: #4b4130;
+  --track: #e7dab6;
+  --sage-wash: rgba(92, 122, 106, 0.12);
+  --danger: #8a2d1f;
+  color: var(--text);
+  background: var(--paper);
+  color-scheme: light;
+}
+
+body:has(.admin) {
+  background: #faf3e6;
+  color: #2a2318;
+}
+
+.admin label.source-option .theme-swatch {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 6px;
+  margin-top: 4px;
+}
+.theme-swatch i {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  display: block;
+}

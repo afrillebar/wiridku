@@ -1,6 +1,6 @@
 "use client";
 
-import { cloneElement, useState, type ReactElement, type ReactNode } from "react";
+import { useState, type ReactElement, type ReactNode } from "react";
 import { deleteVisitLog } from "@/actions/traffic";
 import { ConfirmButton } from "@/components/admin/confirm-button";
 
@@ -72,23 +72,27 @@ function Pager({ state }: { state: PagerState }) {
   );
 }
 
-function Frame({ head, colSpan, empty, state, body }: { head: ReactNode; colSpan: number; empty: string; state: PagerState; body: ReactNode }) {
+function Frame({ head, colSpan, empty, state, body, loose = false }: { head: ReactNode; colSpan: number; empty: string; state: PagerState; body: ReactNode; loose?: boolean }) {
+  const rows =
+    state.total === 0 ? (
+      <tbody>
+        <tr>
+          <td colSpan={colSpan} className="muted">
+            {empty}
+          </td>
+        </tr>
+      </tbody>
+    ) : loose ? (
+      body
+    ) : (
+      <tbody>{body}</tbody>
+    );
   return (
     <div className="datatable">
       <div className="table-wrap">
         <table>
           <thead>{head}</thead>
-          <tbody>
-            {state.total === 0 ? (
-              <tr>
-                <td colSpan={colSpan} className="muted">
-                  {empty}
-                </td>
-              </tr>
-            ) : (
-              body
-            )}
-          </tbody>
+          {rows}
         </table>
       </div>
       <Pager state={state} />
@@ -106,22 +110,36 @@ export function DataTable({
   keepMounted = false,
 }: {
   head: ReactNode;
-  rows: ReactElement<{ hidden?: boolean }>[];
+  rows: ReactElement[];
   empty?: string;
   colSpan: number;
   pageSize?: number;
   keepMounted?: boolean;
 }) {
   const state = usePager(rows.length, pageSize);
+  // Rows from a Server Component arrive as lazy nodes, so cloneElement cannot set hidden on them.
   const body = keepMounted
-    ? rows.map((row, i) => cloneElement(row, { hidden: i < state.from || i >= state.to }))
+    ? rows.map((row, i) => (
+        <tbody key={i} hidden={i < state.from || i >= state.to}>
+          {row}
+        </tbody>
+      ))
     : rows.slice(state.from, state.to);
-  return <Frame head={head} colSpan={colSpan} empty={empty} state={state} body={body} />;
+  return <Frame head={head} colSpan={colSpan} empty={empty} state={state} body={body} loose={keepMounted} />;
 }
 
-export type AccessLogRow = { id: string; visitor: string; time: string; who: string; place: string; device: string; event: string };
+export type AccessLogRow = {
+  id: string;
+  visitor: string;
+  kind: "user" | "visitor";
+  time: string;
+  who: string;
+  place: string;
+  device: string;
+  event: string;
+};
 
-type VisitGroup = { id: string; who: string; latest: AccessLogRow; events: AccessLogRow[] };
+type VisitGroup = { id: string; who: string; kind: "user" | "visitor"; latest: AccessLogRow; events: AccessLogRow[] };
 
 // Rows arrive newest first, so the first sighting of a visitor is their latest visit.
 function groupVisits(rows: AccessLogRow[]): VisitGroup[] {
@@ -137,7 +155,7 @@ function groupVisits(rows: AccessLogRow[]): VisitGroup[] {
   }
   return order.map((id) => {
     const events = map.get(id)!;
-    return { id, who: events[0].who, latest: events[0], events };
+    return { id, who: events[0].who, kind: events[0].kind, latest: events[0], events };
   });
 }
 
@@ -160,7 +178,7 @@ export function AccessLogTable({ rows, days }: { rows: AccessLogRow[]; days: num
         <form action={deleteVisitLog} className="log-clear">
           <input type="hidden" name="scope" value="all" />
           <input type="hidden" name="hari" value={String(days)} />
-          <ConfirmButton className="btn small danger" message="Hapus seluruh log akses? Semua rentang waktu ikut terhapus dan tidak bisa dikembalikan.">
+          <ConfirmButton className="btn small danger" busyLabel="Menghapus…" message="Hapus seluruh log akses? Semua rentang waktu ikut terhapus dan tidak bisa dikembalikan.">
             Hapus semua
           </ConfirmButton>
         </form>
@@ -187,6 +205,15 @@ export function AccessLogTable({ rows, days }: { rows: AccessLogRow[]; days: num
                 {shown ? "Tutup" : "Lihat"}
               </button>
               {g.who}
+              <form action={deleteVisitLog} className="log-person">
+                <input type="hidden" name="scope" value="visitor" />
+                <input type="hidden" name="kind" value={g.kind} />
+                <input type="hidden" name="id" value={g.id} />
+                <input type="hidden" name="hari" value={String(days)} />
+                <ConfirmButton className="btn small danger" busyLabel="Menghapus…" message={`Hapus semua log ${g.who}? Semua rentang waktu untuk pengguna ini ikut terhapus dan tidak bisa dikembalikan.`}>
+                  Hapus log
+                </ConfirmButton>
+              </form>
             </td>
             <td data-label="Terakhir">{g.latest.time}</td>
             <td data-label="Lokasi">{g.latest.place}</td>
@@ -211,7 +238,7 @@ export function AccessLogTable({ rows, days }: { rows: AccessLogRow[]; days: num
                       <input type="hidden" name="scope" value="one" />
                       <input type="hidden" name="id" value={r.id} />
                       <input type="hidden" name="hari" value={String(days)} />
-                      <ConfirmButton className="btn small danger" message="Hapus catatan ini?">
+                      <ConfirmButton className="btn small danger" busyLabel="Menghapus…" message="Hapus catatan ini?">
                         Hapus
                       </ConfirmButton>
                     </form>

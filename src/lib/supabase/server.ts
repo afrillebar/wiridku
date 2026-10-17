@@ -2,12 +2,15 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 
 const url = () => process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const publishableKey = () => process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
 
 // Acts as the logged-in user, so RLS applies.
 export async function createClient() {
+  // The auth client reads the current time. That has to happen on the request, not while prerendering.
+  await connection();
   const store = await cookies();
   return createServerClient(url(), publishableKey(), {
     cookies: {
