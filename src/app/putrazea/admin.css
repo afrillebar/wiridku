@@ -285,8 +285,9 @@
 }
 .log-events li {
   display: grid;
-  grid-template-columns: 11rem 1fr;
+  grid-template-columns: 11rem 1fr auto;
   gap: 2px 12px;
+  align-items: center;
   font-size: 0.84rem;
 }
 .log-events time {
@@ -295,6 +296,16 @@
 .log-events small {
   grid-column: 2;
   color: var(--text-soft);
+}
+.log-events form {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  margin: 0;
+}
+.log-clear {
+  display: flex;
+  justify-content: flex-end;
+  margin: -8px 0 8px;
 }
 
 /* ---------- Forms ---------- */
@@ -912,10 +923,12 @@
     display: block;
   }
   .log-events li {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr auto;
   }
-  .log-events small {
+  .log-events small,
+  .log-events form {
     grid-column: 1;
+    grid-row: auto;
   }
   .row-actions {
     gap: 8px;

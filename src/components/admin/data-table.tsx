@@ -1,6 +1,8 @@
 "use client";
 
 import { cloneElement, useState, type ReactElement, type ReactNode } from "react";
+import { deleteVisitLog } from "@/actions/traffic";
+import { ConfirmButton } from "@/components/admin/confirm-button";
 
 const SIZES = [10, 25, 50];
 
@@ -139,7 +141,7 @@ function groupVisits(rows: AccessLogRow[]): VisitGroup[] {
   });
 }
 
-export function AccessLogTable({ rows }: { rows: AccessLogRow[] }) {
+export function AccessLogTable({ rows, days }: { rows: AccessLogRow[]; days: number }) {
   const groups = groupVisits(rows);
   const state = usePager(groups.length, 10);
   const slice = groups.slice(state.from, state.to);
@@ -153,6 +155,16 @@ export function AccessLogTable({ rows }: { rows: AccessLogRow[] }) {
     });
 
   return (
+    <>
+      {rows.length > 0 && (
+        <form action={deleteVisitLog} className="log-clear">
+          <input type="hidden" name="scope" value="all" />
+          <input type="hidden" name="hari" value={String(days)} />
+          <ConfirmButton className="btn small danger" message="Hapus seluruh log akses? Semua rentang waktu ikut terhapus dan tidak bisa dikembalikan.">
+            Hapus semua
+          </ConfirmButton>
+        </form>
+      )}
     <Frame
       colSpan={5}
       empty="Belum ada kunjungan di rentang ini."
@@ -195,6 +207,14 @@ export function AccessLogTable({ rows }: { rows: AccessLogRow[] }) {
                     <small>
                       {r.place} · {r.device}
                     </small>
+                    <form action={deleteVisitLog}>
+                      <input type="hidden" name="scope" value="one" />
+                      <input type="hidden" name="id" value={r.id} />
+                      <input type="hidden" name="hari" value={String(days)} />
+                      <ConfirmButton className="btn small danger" message="Hapus catatan ini?">
+                        Hapus
+                      </ConfirmButton>
+                    </form>
                   </li>
                 ))}
               </ul>
@@ -203,5 +223,6 @@ export function AccessLogTable({ rows }: { rows: AccessLogRow[] }) {
         ];
       })}
     />
+    </>
   );
 }

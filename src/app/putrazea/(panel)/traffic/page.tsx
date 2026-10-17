@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AccessLogTable, DataTable } from "@/components/admin/data-table";
+import { Flash } from "@/components/admin/flash";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -17,6 +18,7 @@ const clock = () => Date.now();
 const MAX_ROWS = 50000;
 
 type Row = {
+  id: number;
   created_at: string;
   visitor_id: string;
   user_id: string | null;
@@ -81,7 +83,7 @@ export default async function TrafficPage(props: PageProps<"/putrazea/traffic">)
   for (let from = 0; from < MAX_ROWS; from += PAGE) {
     const { data } = await supabase
       .from("visit_events")
-      .select("created_at, visitor_id, user_id, event, path, slug, country, region, city, device, browser, os, referrer")
+      .select("id, created_at, visitor_id, user_id, event, path, slug, country, region, city, device, browser, os, referrer")
       .gte("created_at", since.toISOString())
       .order("created_at", { ascending: false })
       .range(from, from + PAGE - 1);
@@ -215,9 +217,11 @@ export default async function TrafficPage(props: PageProps<"/putrazea/traffic">)
       </div>
 
       <h2>Log akses</h2>
+      <Flash searchParams={props.searchParams} />
       <AccessLogTable
-        rows={rows.map((r, i) => ({
-          id: `${r.created_at}-${i}`,
+        days={days}
+        rows={rows.map((r) => ({
+          id: String(r.id),
           visitor: r.user_id ?? r.visitor_id,
           time: new Date(r.created_at).toLocaleString("id-ID", { timeZone: TZ, dateStyle: "short", timeStyle: "medium" }),
           who: who(r),
