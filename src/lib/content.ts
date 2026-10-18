@@ -51,12 +51,12 @@ export type Phase = {
 };
 
 export const RECITATION_COLUMNS =
-  "id, slug, kind, show_number, audio_source, youtube_id, youtube_start, youtube_end, title, arabic_text, transliteration, translation, chip_label, reference_text, tasbih_config, audio_files(storage_path, duration_seconds, audio_version, offline_available, reciter_name, synthetic, cues)";
+  "id, slug, kind, show_number, audio_source, youtube_id, youtube_start, youtube_end, title, arabic_text, transliteration, translation, chip_label, reference_text, tasbih_config, audio_files(storage_path, duration_seconds, audio_version, offline_available, synthetic, cues)";
 
 // ponytail: longer than any cached page lifetime; the player asks /api/audio-url for a fresh one if it still expires
 export const SIGNED_URL_SECONDS = 60 * 60 * 24;
 
-type RawAudio = { storage_path: string; duration_seconds: number | null; audio_version: number; offline_available: boolean; reciter_name: string | null; synthetic: boolean; cues: AudioCue[] | null };
+type RawAudio = { storage_path: string; duration_seconds: number | null; audio_version: number; offline_available: boolean; synthetic: boolean; cues: AudioCue[] | null };
 type RawRecitation = Omit<Recitation, "audio" | "display_number" | "source"> & { audio_source: string | null; audio_files: RawAudio | RawAudio[] | null };
 export type RawPhase = Omit<Phase, "recitations" | "number"> & { recitations: RawRecitation[] };
 
@@ -104,7 +104,7 @@ export async function withAudioUrls(
               version: a.audio_version,
               duration: a.duration_seconds === null ? null : Number(a.duration_seconds),
               offline: a.offline_available,
-              reciter: a.reciter_name,
+              reciter: null,
               synthetic: a.synthetic,
               cues: a.cues ?? null,
             }

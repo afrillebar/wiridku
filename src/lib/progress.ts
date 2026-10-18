@@ -2,7 +2,11 @@ import { useCallback, useMemo, useSyncExternalStore } from "react";
 
 const PROGRESS_KEY = "wirid_progress_v1";
 const STREAK_KEY = "wirid_streak_v1";
+const FONT_KEY = "wirid_font_v1";
+const PLACE_KEY = "wirid_place_v1";
 const EVENT = "wirid-storage";
+const MIN_STEP = -2;
+const MAX_STEP = 4;
 
 type Streak = { lastDate: string | null; streak: number };
 
@@ -23,12 +27,14 @@ const read = (key: string): unknown => {
     return null;
   }
 };
-const write = (key: string, value: unknown) => {
+const write = (key: string, value: unknown, notify = true) => {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {}
-  window.dispatchEvent(new Event(EVENT));
+  if (notify) window.dispatchEvent(new Event(EVENT));
 };
+
+const clampStep = (n: number) => Math.min(MAX_STEP, Math.max(MIN_STEP, Number.isFinite(n) ? Math.round(n) : 0));
 
 const readDone = (): string[] => {
   const p = read(PROGRESS_KEY) as { date?: string; done?: string[] } | null;
@@ -78,4 +84,26 @@ export function useProgress(validIds: string[]) {
   );
 
   return { done, streak: Number(streakRaw), toggle };
+}
+
+export function useFontStep() {
+  const raw = useSyncExternalStore(
+    subscribe,
+    () => {
+      const n = read(FONT_KEY);
+      return String(clampStep(typeof n === "number" ? n : 0));
+    },
+    () => "0",
+  );
+  const setStep = useCallback((step: number) => write(FONT_KEY, clampStep(step)), []);
+  return { step: Number(raw), setStep, min: MIN_STEP, max: MAX_STEP };
+}
+
+export function readPlace() {
+  const value = read(PLACE_KEY);
+  return typeof value === "string" && value ? value : null;
+}
+
+export function writePlace(slug: string) {
+  write(PLACE_KEY, slug, false);
 }

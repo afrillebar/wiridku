@@ -95,6 +95,28 @@ h1 {
   opacity: 0.4;
   cursor: default;
 }
+.jump {
+  flex: 1 1 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-soft);
+}
+.jump select {
+  flex: 1;
+  min-width: 0;
+  min-height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 6px 8px;
+}
 
 /* ---------- Layout ---------- */
 main {
@@ -104,7 +126,7 @@ main {
 }
 section.phase {
   margin-top: 34px;
-  scroll-margin-top: 112px;
+  scroll-margin-top: 188px;
 }
 section.phase:first-child {
   margin-top: 22px;
@@ -132,6 +154,7 @@ section.phase:first-child {
 .phase-titles p {
   margin: 0;
   font-size: 0.82rem;
+  line-height: 1.55;
   color: var(--text-soft);
 }
 .phase-rule {
@@ -149,6 +172,7 @@ section.phase:first-child {
   padding: 18px 18px 16px;
   margin-bottom: 14px;
   position: relative;
+  scroll-margin-top: 188px;
   transition: border-color 0.2s ease, background 0.2s ease;
 }
 .card.done {
@@ -165,13 +189,18 @@ section.phase:first-child {
 .card-title {
   display: flex;
   align-items: baseline;
-  gap: 8px;
   flex-wrap: wrap;
+  column-gap: 0.7rem;
+  row-gap: 0.35rem;
 }
 .card-index {
   font-size: 0.72rem;
   color: var(--text-soft);
   font-weight: 700;
+}
+.card-sep {
+  color: var(--text-soft);
+  font-weight: 600;
 }
 .card-name {
   font-family: var(--font-fraunces), serif;

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import type { Phase, Recitation } from "@/lib/content";
-import { useProgress } from "@/lib/progress";
+import { readPlace, useFontStep, useProgress, writePlace } from "@/lib/progress";
 import { AudioBar, AudioButton, AudioProvider, OfflineControl, type Track } from "./audio";
 import { InstallPrompt } from "./install-prompt";
 import { YoutubeEmbed } from "./youtube-embed";
@@ -10,32 +10,55 @@ import { TasbihBox } from "./tasbih-box";
 import { splitSurahParts } from "@/lib/surah-parts";
 import { track } from "@/lib/track";
 
-const MIN_STEP = -2;
-const MAX_STEP = 4;
-
 export function WiridApp({ phases, preview = false }: { phases: Phase[]; preview?: boolean }) {
   const ids = useMemo(() => phases.flatMap((p) => p.recitations.map((r) => r.slug)), [phases]);
   const { done, streak, toggle } = useProgress(ids);
-  const [step, setStep] = useState(0);
+  const { step, setStep, min: minStep, max: maxStep } = useFontStep();
   const [active, setActive] = useState(phases[0]?.slug);
+  const [focus, setFocus] = useState(phases[0]?.slug ?? "");
   const queue = useMemo(
     () => phases.flatMap((p) => p.recitations.flatMap((r): Track[] => (r.audio ? [{ slug: r.slug, title: r.title, audio: r.audio }] : []))),
     [phases],
   );
 
   useEffect(() => {
+    const id = location.hash.slice(1) || (!preview ? readPlace() : null);
+    if (!id || !document.getElementById(id)) return;
+    document.getElementById(id)?.scrollIntoView();
+    setFocus(id);
+  }, [preview]);
+
+  useEffect(() => {
+    let timer = 0;
     const onScroll = () => {
-      const pos = window.scrollY + 130;
-      let current = phases[0]?.slug;
+      const pos = window.scrollY + 200;
+      let phase = phases[0]?.slug;
+      let place = phase ?? "";
       for (const p of phases) {
-        const el = document.getElementById(p.slug);
-        if (el && el.offsetTop <= pos) current = p.slug;
+        const head = document.getElementById(p.slug);
+        if (head && head.offsetTop <= pos) {
+          phase = p.slug;
+          place = p.slug;
+        }
+        for (const r of p.recitations) {
+          const card = document.getElementById(r.slug);
+          if (card && card.offsetTop <= pos) place = r.slug;
+        }
       }
-      setActive(current);
+      setActive(phase);
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        setFocus(place);
+        if (!preview && place) writePlace(place);
+      }, 150);
     };
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [phases]);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [phases, preview]);
 
   useEffect(() => {
     if (!preview) track("view");
@@ -75,13 +98,39 @@ export function WiridApp({ phases, preview = false }: { phases: Phase[]; preview
               ))}
             </nav>
             <div className="font-ctrl">
-              <button type="button" className="font-btn" aria-label="Perkecil teks Arab" disabled={step <= MIN_STEP} onClick={() => setStep(step - 1)}>
+              <button type="button" className="font-btn" aria-label="Perkecil teks Arab" disabled={step <= minStep} onClick={() => setStep(step - 1)}>
                 A−
               </button>
-              <button type="button" className="font-btn" aria-label="Perbesar teks Arab" disabled={step >= MAX_STEP} onClick={() => setStep(step + 1)}>
+              <button type="button" className="font-btn" aria-label="Perbesar teks Arab" disabled={step >= maxStep} onClick={() => setStep(step + 1)}>
                 A+
               </button>
             </div>
+            <label className="jump">
+              Langsung ke
+              <select
+                aria-label="Langsung ke fase atau bacaan"
+                value={focus}
+                onChange={(event) => {
+                  const id = event.target.value;
+                  const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+                  document.getElementById(id)?.scrollIntoView({ behavior });
+                  setFocus(id);
+                  if (!preview) writePlace(id);
+                }}
+              >
+                {phases.map((p) => (
+                  <optgroup key={p.slug} label={`Fase ${p.number}. ${p.title}`}>
+                    <option value={p.slug}>Awal fase {p.number}</option>
+                    {p.recitations.map((r) => (
+                      <option key={r.slug} value={r.slug}>
+                        {r.display_number !== null ? `${r.display_number}. ` : ""}
+                        {r.title}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </label>
           </div>
         </div>
       </header>
@@ -107,7 +156,7 @@ export function WiridApp({ phases, preview = false }: { phases: Phase[]; preview
       <footer>
         <div className="rule" />
         <p>
-          Progres harian tersimpan otomatis di perangkat ini agar mudah dilanjutkan konsisten setiap selesai salat.
+          Bacaan yang sudah selesai dan posisi terakhir tersimpan di perangkat ini, supaya bisa dilanjutkan tanpa mencari dari awal.
           <br />
           Disusun untuk penggunaan pribadi.
         </p>
@@ -160,11 +209,12 @@ function Card({ r, done, onToggle }: { r: Recitation; done: boolean; onToggle: (
   const track: Track | null = r.audio ? { slug: r.slug, title: r.title, audio: r.audio } : null;
 
   return (
-    <article className={`card${done ? " done" : ""}`} data-slug={r.slug}>
+    <article id={r.slug} className={`card${done ? " done" : ""}`} data-slug={r.slug}>
       <div className="card-top">
         <div className="card-title">
           {r.display_number !== null && <span className="card-index">{r.display_number}.</span>}
           <span className="card-name">{r.title}</span>
+          {r.chip_label && <span className="card-sep" aria-hidden="true">–</span>}
           {r.chip_label && <span className="repeat-chip">{r.chip_label}</span>}
         </div>
         <div className="card-actions">
@@ -181,7 +231,6 @@ function Card({ r, done, onToggle }: { r: Recitation; done: boolean; onToggle: (
 
       <Reading r={r} />
       {showReference && <p className="source">Sumber: {r.reference_text}</p>}
-      {track && !track.audio.synthetic && track.audio.reciter && <p className="source">Qari: {track.audio.reciter}</p>}
       {r.source === "youtube" && r.youtube_id && <YoutubeEmbed id={r.youtube_id} start={r.youtube_start} end={r.youtube_end} title={r.title} />}
       {track?.audio.offline && <OfflineControl track={track} />}
     </article>
