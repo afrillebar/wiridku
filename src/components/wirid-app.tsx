@@ -29,8 +29,11 @@ export function WiridApp({ phases, preview = false }: { phases: Phase[]; preview
   }, [preview]);
 
   useEffect(() => {
-    let timer = 0;
-    const onScroll = () => {
+    let frame = 0;
+    let seenPhase = phases[0]?.slug;
+    let seenPlace = phases[0]?.slug ?? "";
+    const readPosition = () => {
+      frame = 0;
       const pos = window.scrollY + 200;
       let phase = phases[0]?.slug;
       let place = phase ?? "";
@@ -45,17 +48,24 @@ export function WiridApp({ phases, preview = false }: { phases: Phase[]; preview
           if (card && card.offsetTop <= pos) place = r.slug;
         }
       }
-      setActive(phase);
-      window.clearTimeout(timer);
-      timer = window.setTimeout(() => {
+      if (phase !== seenPhase) {
+        seenPhase = phase;
+        setActive(phase);
+      }
+      if (place !== seenPlace) {
+        seenPlace = place;
         setFocus(place);
         if (!preview && place) writePlace(place);
-      }, 150);
+      }
     };
-    onScroll();
+    const onScroll = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(readPosition);
+    };
+    frame = requestAnimationFrame(readPosition);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
-      window.clearTimeout(timer);
+      if (frame) cancelAnimationFrame(frame);
       window.removeEventListener("scroll", onScroll);
     };
   }, [phases, preview]);
