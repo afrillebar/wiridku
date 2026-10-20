@@ -81,7 +81,7 @@ const MENU = [
   { name: "Doa Harian", icon: ICONS.hands },
   { name: "Arah Kiblat", icon: ICONS.compass },
   { name: "Kalender", icon: ICONS.calendar, href: "/kalender" },
-  { name: "Jadwal Salat", icon: ICONS.mosque },
+  { name: "Jadwal Salat", icon: ICONS.mosque, href: "/jadwal-salat" },
 ];
 
 export function Dashboard({ phases }: { phases: DashboardPhase[] }) {

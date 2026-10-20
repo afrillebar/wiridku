@@ -30,13 +30,13 @@ const toMinutes = (hhmm: string) => {
   const [h, m] = hhmm.split(":").map(Number);
   return h * 60 + m;
 };
-const monthKey = (id: string, y: number, m: number) => `${id}-${y}-${m}`;
+export const monthKey = (id: string, y: number, m: number) => `${id}-${y}-${m}`;
 
 // ---------- small external stores (localStorage + a clock), read with useSyncExternalStore ----------
 
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((l) => l());
-const subscribeStore = (cb: () => void) => {
+export const subscribeStore = (cb: () => void) => {
   listeners.add(cb);
   window.addEventListener("storage", cb);
   return () => {
@@ -61,7 +61,7 @@ const saveCity = (city: City) => {
 };
 
 let months: Record<string, MonthSchedule> | null = null;
-const readMonths = () => {
+export const readMonths = () => {
   if (months === null) {
     try {
       months = JSON.parse(localStorage.getItem(CACHE_KEY) ?? "{}");
@@ -212,7 +212,13 @@ export function useSavedMonths() {
 
 // ---------- card ----------
 
-const PRAYER_ICON: Record<string, ReactNode> = {
+export const PRAYER_ICON: Record<string, ReactNode> = {
+  imsak: (
+    <>
+      <circle cx="12" cy="12" r="8" />
+      <path d="M12 8v4l2.5 2" />
+    </>
+  ),
   subuh: <path d="M4 18h16M7 18a5 5 0 0 1 10 0M12 7V4M9.5 9.5 8 8M14.5 9.5 16 8" />,
   dzuhur: (
     <>
@@ -499,8 +505,7 @@ export function PrayerCard() {
           <div className="imsak">
             <span>Imsak</span>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="8" />
-              <path d="M12 8v4l2.5 2" />
+              {PRAYER_ICON.imsak}
             </svg>
             <strong>{day?.imsak ?? "--:--"}</strong>
           </div>
