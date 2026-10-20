@@ -23,6 +23,7 @@ async function Header() {
     { href: "/putrazea", label: "Dashboard" },
     { href: "/putrazea/phases", label: "Fase" },
     { href: "/putrazea/recitations", label: "Bacaan" },
+    { href: "/putrazea/doa", label: "Doa Harian" },
     { href: "/putrazea/preview", label: "Pratinjau" },
     ...(staff.role === "admin"
       ? [

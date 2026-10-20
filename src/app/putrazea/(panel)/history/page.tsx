@@ -2,7 +2,7 @@ import { DataTable } from "@/components/admin/data-table";
 import { requireStaff } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
-const ENTITY = { phase: "Fase", recitation: "Bacaan", user: "Pengguna" } as Record<string, string>;
+const ENTITY = { phase: "Fase", recitation: "Bacaan", prayer: "Doa Harian", user: "Pengguna" } as Record<string, string>;
 
 export default async function HistoryPage() {
   const supabase = await createClient();

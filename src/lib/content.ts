@@ -3,6 +3,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { assignNumbers } from "@/lib/numbering";
 import { DEFAULT_AUDIO_SOURCE, parseAudioSource, resolveAudioSource, type AudioSource } from "@/lib/audio-source";
 import { parseSiteTheme, type SiteThemeId } from "@/lib/site-theme";
+import { PRAYER_CATEGORIES, PRAYER_COLUMNS, type Prayer } from "@/lib/doa";
 
 export type TasbihStep = { arabic: string; transliteration: string; target: number };
 
@@ -153,4 +154,19 @@ export async function getAudioSource(): Promise<AudioSource> {
 
   const { data } = await createAnonClient().from("app_settings").select("value").eq("key", "audio_source").maybeSingle();
   return data ? parseAudioSource(data.value) : DEFAULT_AUDIO_SOURCE;
+}
+
+// Published doa, in the order of the groups; the anon key and RLS decide what is public
+export async function getPublishedPrayers(): Promise<Prayer[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("content");
+
+  const { data, error } = await createAnonClient().from("daily_prayers").select(PRAYER_COLUMNS).order("sort_order");
+  if (error) throw new Error(`Supabase: ${error.message}`);
+  const rank = (c: string) => {
+    const i = PRAYER_CATEGORIES.findIndex((x) => x.id === c);
+    return i < 0 ? 999 : i;
+  };
+  return (data as Prayer[]).sort((a, b) => rank(a.category) - rank(b.category));
 }

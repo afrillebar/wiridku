@@ -1676,7 +1676,8 @@ button.set-row {
 .cal,
 .sched,
 .tsb,
-.qbl {
+.qbl,
+.doa {
   --cal-green: var(--sage-dark);
   --hero-accent: var(--gold-soft);
   /* firm colours on purpose: they must not blend into the site theme */
@@ -1704,7 +1705,8 @@ button.set-row {
 [data-site-theme="malam"] .cal,
 [data-site-theme="malam"] .sched,
 [data-site-theme="malam"] .tsb,
-[data-site-theme="malam"] .qbl {
+[data-site-theme="malam"] .qbl,
+[data-site-theme="malam"] .doa {
   --cal-green: var(--sage);
   --hero-accent: var(--gold);
   --cal-sun: #ff7a6e;
@@ -2931,4 +2933,187 @@ button.set-row {
 .size-value output {
   font-weight: 700;
   color: var(--ink);
+}
+
+/* ---------- Doa Harian ---------- */
+.doa-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 16px 0;
+  padding: 0 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text-soft);
+}
+.doa-search input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.92rem;
+  outline: none;
+}
+.doa-search:focus-within {
+  border-color: var(--cal-puasa);
+}
+.doa-cats {
+  display: flex;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 2px 16px 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.doa-cats::-webkit-scrollbar {
+  display: none;
+}
+.doa-cats button {
+  flex: none;
+  min-height: 36px;
+  padding: 4px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.doa-cats button[aria-pressed="true"] {
+  border-color: var(--cal-puasa);
+  background: var(--cal-sel-bg);
+  box-shadow: 0 0 0 1px var(--cal-puasa);
+}
+.doa-group {
+  margin: 14px 12px 0;
+}
+.doa-group h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 4px 8px;
+  font-size: 0.78rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.doa-group h2 span {
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--sage-wash);
+  font-size: 0.72rem;
+  letter-spacing: 0;
+}
+.doa-card {
+  margin-top: 8px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  scroll-margin-top: 8px;
+}
+.doa-card.open {
+  border-color: var(--cal-puasa);
+}
+.doa-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 54px;
+  padding: 10px 14px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.doa-head strong {
+  font-size: 0.96rem;
+}
+.doa-head em {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--cal-sel-bg);
+  color: var(--cal-fri);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 700;
+}
+.doa-head svg {
+  flex: none;
+  color: var(--text-soft);
+  transition: transform 0.15s;
+}
+.doa-card.open .doa-head svg {
+  transform: rotate(180deg);
+}
+.doa-body {
+  padding: 0 14px 14px;
+}
+.doa-note {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  color: var(--text-soft);
+}
+.doa-line + .doa-line {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+.doa-line .arabic {
+  white-space: pre-line;
+}
+.doa-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.doa-foot .source {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+.doa-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 4px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--cal-fri);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.doa-empty {
+  margin: 28px 20px 0;
+  text-align: center;
+  color: var(--text-soft);
+}
+.doa-note-foot {
+  margin: 20px 20px 0;
+  text-align: center;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+.doa-note-foot a {
+  color: var(--cal-fri);
+  font-weight: 700;
 }
