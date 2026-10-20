@@ -1645,7 +1645,8 @@ a.menu-item:hover {
 /* ---------- Kalender ---------- */
 .cal,
 .sched,
-.tsb {
+.tsb,
+.qbl {
   --cal-green: var(--sage-dark);
   --hero-accent: var(--gold-soft);
   /* firm colours on purpose: they must not blend into the site theme */
@@ -1672,7 +1673,8 @@ a.menu-item:hover {
 }
 [data-site-theme="malam"] .cal,
 [data-site-theme="malam"] .sched,
-[data-site-theme="malam"] .tsb {
+[data-site-theme="malam"] .tsb,
+[data-site-theme="malam"] .qbl {
   --cal-green: var(--sage);
   --hero-accent: var(--gold);
   --cal-sun: #ff7a6e;
@@ -2441,4 +2443,197 @@ a.menu-item:hover {
   text-align: center;
   font-size: 0.72rem;
   color: var(--text-soft);
+}
+
+/* ---------- Arah Kiblat ---------- */
+.qbl-result {
+  margin: 16px 16px 0;
+  text-align: center;
+}
+.qbl-result p {
+  margin: 0;
+}
+.qbl-deg {
+  font-family: var(--font-fraunces), serif;
+  font-size: 3.2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.qbl-dir {
+  margin-top: 2px !important;
+  font-size: 0.9rem;
+  color: var(--text-soft);
+}
+.qbl-place {
+  margin-top: 6px !important;
+  font-size: 0.8rem;
+  color: var(--text-soft);
+}
+.qbl-link {
+  margin-left: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--cal-fri);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.qbl-wrap {
+  position: relative;
+  width: min(78vw, 320px);
+  aspect-ratio: 1;
+  margin: 18px auto 0;
+}
+.qbl-pointer {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  z-index: 2;
+  width: 0;
+  height: 0;
+  margin-left: -9px;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 16px solid var(--cal-sun);
+}
+.qbl-wrap.aligned .qbl-pointer {
+  border-top-color: var(--cal-puasa);
+}
+.qbl-plate,
+.qbl-plate svg {
+  width: 100%;
+  height: 100%;
+}
+.qbl-plate svg {
+  display: block;
+  overflow: visible;
+}
+.qbl-ring {
+  fill: var(--card);
+  stroke: var(--line);
+  stroke-width: 3;
+}
+.qbl-wrap.aligned .qbl-ring {
+  stroke: var(--cal-puasa);
+  stroke-width: 5;
+}
+.qbl-plate line {
+  stroke: var(--text-soft);
+  stroke-width: 1;
+}
+.qbl-plate line.major {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.qbl-plate text {
+  fill: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+.qbl-plate text.north {
+  fill: var(--cal-sun);
+}
+.qbl-kaaba line {
+  stroke: var(--cal-bidh);
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+}
+.qbl-kaaba rect {
+  fill: #1c1c1c;
+  stroke: var(--cal-bidh);
+  stroke-width: 2;
+}
+.qbl-kaaba path {
+  stroke: var(--cal-bidh);
+  stroke-width: 2;
+}
+.qbl-status {
+  margin: 16px 16px 0;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.qbl-tilt {
+  margin: 6px 16px 0;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--cal-bidh);
+}
+.qbl-btn {
+  display: block;
+  min-height: 44px;
+  margin: 14px auto 0;
+  padding: 8px 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--sage-dark);
+  color: var(--on-sage);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.qbl-btn:disabled {
+  opacity: 0.6;
+}
+.qbl-tips {
+  margin: 18px 20px 0;
+  padding: 0 0 0 18px;
+  list-style: disc;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+.qbl-tips li + li {
+  margin-top: 6px;
+}
+.qbl-ask {
+  margin: 20px 16px 0;
+  padding: 18px 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  text-align: center;
+}
+.qbl-ask > p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+.qbl-err {
+  margin: 12px 0 0 !important;
+  font-size: 0.84rem !important;
+  color: var(--cal-sun) !important;
+}
+.qbl-ask details {
+  margin-top: 14px;
+  text-align: left;
+  font-size: 0.86rem;
+}
+.qbl-ask summary {
+  cursor: pointer;
+  color: var(--cal-fri);
+  font-weight: 700;
+}
+.qbl-ask form {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+.qbl-ask label {
+  display: grid;
+  gap: 4px;
+  color: var(--text-soft);
+}
+.qbl-ask input {
+  min-height: 42px;
+  padding: 6px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
 }

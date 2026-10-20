@@ -79,7 +79,7 @@ const MENU = [
   { name: "Wirid Salat", icon: ICONS.book, href: "/wirid-salat" },
   { name: "Tasbih", icon: ICONS.beads, href: "/tasbih" },
   { name: "Doa Harian", icon: ICONS.hands },
-  { name: "Arah Kiblat", icon: ICONS.compass },
+  { name: "Arah Kiblat", icon: ICONS.compass, href: "/arah-kiblat" },
   { name: "Kalender", icon: ICONS.calendar, href: "/kalender" },
   { name: "Jadwal Salat", icon: ICONS.mosque, href: "/jadwal-salat" },
 ];

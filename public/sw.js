@@ -1,6 +1,6 @@
 // Wiridku service worker. Bump VERSION when the caching rules below change.
-const VERSION = "wiridku-v7";
-const PRECACHE = ["/", "/wirid-salat", "/kalender", "/jadwal-salat", "/tasbih", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/favicon.png", "/apple-touch-icon.png"];
+const VERSION = "wiridku-v8";
+const PRECACHE = ["/", "/wirid-salat", "/kalender", "/jadwal-salat", "/tasbih", "/arah-kiblat", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/favicon.png", "/apple-touch-icon.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
