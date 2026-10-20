@@ -57,3 +57,6 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 .idea/
+
+# local https proxy certs
+.certs/

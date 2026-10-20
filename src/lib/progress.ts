@@ -104,6 +104,40 @@ export function readPlace() {
   return typeof value === "string" && value ? value : null;
 }
 
+export function usePlace() {
+  return useSyncExternalStore(subscribe, readPlace, () => null);
+}
+
 export function writePlace(slug: string) {
   write(PLACE_KEY, slug, false);
+}
+
+// Pengaturan > Penyimpanan Data: what is stored, and wiping it.
+export function useProgressSummary() {
+  const raw = useSyncExternalStore(
+    subscribe,
+    () => {
+      const s = readStreak();
+      const streak = s.lastDate === today() || s.lastDate === yesterday() ? s.streak : 0;
+      return JSON.stringify([readDone().length, streak, readPlace()]);
+    },
+    () => "[0,0,null]",
+  );
+  const [done, streak, place] = JSON.parse(raw) as [number, number, string | null];
+  return { done, streak, place };
+}
+
+export function clearProgress() {
+  try {
+    localStorage.removeItem(PROGRESS_KEY);
+    localStorage.removeItem(STREAK_KEY);
+  } catch {}
+  window.dispatchEvent(new Event(EVENT));
+}
+
+export function clearPlace() {
+  try {
+    localStorage.removeItem(PLACE_KEY);
+  } catch {}
+  window.dispatchEvent(new Event(EVENT));
 }

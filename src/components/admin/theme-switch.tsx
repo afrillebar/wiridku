@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 const KEY = "wiridku-admin-theme";
+const EVENT = "wiridku-admin-theme";
 const THEMES = [
   { id: "kertas", label: "Kertas" },
   { id: "malam", label: "Malam" },
@@ -27,7 +28,17 @@ export function applyAdminTheme(theme: Theme) {
   } catch {
     /* private mode */
   }
+  window.dispatchEvent(new Event(EVENT));
 }
+
+const subscribe = (cb: () => void) => {
+  window.addEventListener(EVENT, cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    window.removeEventListener(EVENT, cb);
+    window.removeEventListener("storage", cb);
+  };
+};
 
 export function ThemeBoot() {
   useEffect(() => {
@@ -40,8 +51,7 @@ export function ThemeBoot() {
 }
 
 export function ThemeSwitch() {
-  const [theme, setTheme] = useState<Theme>("kertas");
-  useEffect(() => setTheme(readTheme()), []);
+  const theme = useSyncExternalStore(subscribe, readTheme, () => "kertas" as Theme);
 
   return (
     <label className="theme-switch">
@@ -50,9 +60,7 @@ export function ThemeSwitch() {
         aria-label="Tema panel"
         value={theme}
         onChange={(e) => {
-          const next = e.target.value === "malam" ? "malam" : "kertas";
-          setTheme(next);
-          applyAdminTheme(next);
+          applyAdminTheme(e.target.value === "malam" ? "malam" : "kertas");
         }}
       >
         {THEMES.map((t) => (

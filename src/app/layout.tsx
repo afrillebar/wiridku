@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Amiri, Fraunces, Karla } from "next/font/google";
 import { getSiteTheme } from "@/lib/content";
-import { SITE_THEMES } from "@/lib/site-theme";
+import { SITE_THEMES, VISITOR_THEME_SCRIPT } from "@/lib/site-theme";
 import "./globals.css";
 import "./wirid.css";
 import "./site-theme.css";
@@ -52,7 +52,11 @@ export async function generateViewport(): Promise<Viewport> {
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const theme = await getSiteTheme();
   return (
-    <html lang="id" data-site-theme={theme} className={`${fraunces.variable} ${karla.variable} ${amiri.variable}`}>
+    // ponytail: the head script may swap data-site-theme for the visitor's own choice before React hydrates
+    <html lang="id" data-site-theme={theme} className={`${fraunces.variable} ${karla.variable} ${amiri.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: VISITOR_THEME_SCRIPT }} />
+      </head>
       <body suppressHydrationWarning>{children}</body>
     </html>
   );

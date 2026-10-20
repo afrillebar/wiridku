@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, use, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, use, useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import type { AudioInfo } from "@/lib/content";
 import { track as trackEvent } from "@/lib/track";
 
@@ -49,6 +49,31 @@ type Player = {
 
 const PlayerContext = createContext<Player | null>(null);
 const AUTO_KEY = "wiridku-autoplay";
+const AUTO_EVENT = "wiridku-autoplay";
+
+const readAuto = () => {
+  try {
+    return localStorage.getItem(AUTO_KEY) !== "0";
+  } catch {
+    return true;
+  }
+};
+const subscribeAuto = (cb: () => void) => {
+  window.addEventListener(AUTO_EVENT, cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    window.removeEventListener(AUTO_EVENT, cb);
+    window.removeEventListener("storage", cb);
+  };
+};
+export const saveAutoplay = (on: boolean) => {
+  try {
+    localStorage.setItem(AUTO_KEY, on ? "1" : "0");
+  } catch {}
+  window.dispatchEvent(new Event(AUTO_EVENT));
+};
+// "play the next card when one ends"; shared by the player and Pengaturan > Audio
+export const useAutoplay = () => useSyncExternalStore(subscribeAuto, readAuto, () => true);
 
 // bring the next card under the sticky header
 function scrollToCard(slug: string) {
@@ -67,24 +92,12 @@ export function AudioProvider({ children, queue = [] }: { children: ReactNode; q
   const retried = useRef(false);
   const track = useRef<Track | null>(null);
   const [now, setNow] = useState<Now | null>(null);
-  // ponytail: safe to read storage up front, the toggle only renders after a tap so hydration never sees it
-  const [auto, setAutoState] = useState(() => {
-    try {
-      return typeof window === "undefined" || localStorage.getItem(AUTO_KEY) !== "0";
-    } catch {
-      return true;
-    }
-  });
+  const auto = useAutoplay();
   // ponytail: the ended listener is bound once, so it reads the live queue/setting/start through refs
   const scrollTo = useRef<string | null>(null);
   const live = useRef<{ queue: Track[]; auto: boolean; start: (t: Track) => void }>({ queue, auto, start: () => {} });
 
-  const setAuto = useCallback((on: boolean) => {
-    setAutoState(on);
-    try {
-      localStorage.setItem(AUTO_KEY, on ? "1" : "0");
-    } catch {}
-  }, []);
+  const setAuto = saveAutoplay;
 
   const patch = (p: Partial<Now>) => setNow((n) => (n ? { ...n, ...p } : n));
 
@@ -250,7 +263,7 @@ export function AudioButton({ track }: { track: Track }) {
             ? `Memuat ${noun} ${track.title}`
             : `Putar ${noun} ${track.title}`;
   return (
-    <button type="button" className={`audio-btn${mine ? " active" : ""}`} aria-label={label} title={label} onClick={() => toggle(track)}>
+    <button type="button" className={`audio-btn${mine ? " active" : ""}`} aria-label={label} data-tip={status === "playing" ? "Jeda" : status === "paused" ? "Lanjutkan" : status === "ended" ? "Putar ulang" : status === "loading" ? "Memuat…" : "Putar audio"} data-tip-align="end" onClick={() => toggle(track)}>
       <Icon name={icon} />
     </button>
   );

@@ -28,6 +28,7 @@ type Row = {
   country: string | null;
   region: string | null;
   city: string | null;
+  place: string | null;
   device: string | null;
   browser: string | null;
   os: string | null;
@@ -43,10 +44,11 @@ const country = (c: string | null) => {
     return c;
   }
 };
-const place = (r: Row) => [r.city, country(r.country)].filter(Boolean).join(", ") || "Tidak diketahui";
+// the area from the visitor's GPS (when they allowed it) is closer than the one guessed from the IP address
+const place = (r: Row) => (r.place ? `${r.place} (GPS)` : [r.city, country(r.country)].filter(Boolean).join(", ") || "Tidak diketahui");
 
 async function loadRows(supabase: Awaited<ReturnType<typeof createClient>>, since: Date) {
-  const columns = "id, created_at, visitor_id, user_id, event, path, slug, country, region, city, device, browser, os, referrer";
+  const columns = "id, created_at, visitor_id, user_id, event, path, slug, country, region, city, place, device, browser, os, referrer";
   const page = (from: number) =>
     supabase.from("visit_events").select(columns).gte("created_at", since.toISOString()).order("created_at", { ascending: false }).range(from, from + PAGE - 1);
   const rows: Row[] = [];

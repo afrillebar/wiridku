@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { after, type NextRequest } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 
-const EVENTS = new Set(["view", "play", "complete"]);
+const EVENTS = new Set(["view", "play", "complete", "place"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const BOT = /bot|crawl|spider|slurp|preview|headless|lighthouse|monitor|curl|wget/i;
 const KEEP_DAYS = 180;
@@ -35,10 +35,17 @@ export async function POST(request: NextRequest) {
   const day = new Date().toISOString().slice(0, 10);
   const salt = process.env.SUPABASE_SECRET_KEY ?? "";
 
+  const place = typeof body.place === "string" && body.place.trim() ? clip(body.place.trim(), 80) : null;
+
   after(async () => {
-    const claims = await (await createClient()).auth.getClaims().catch(() => null);
     const db = createServiceClient();
-    await db.from("visit_events").insert({
+    // the area name is known only after the visitor allowed location, i.e. after the first view was logged: fill it in on their recent rows
+    if (body.event === "place") {
+      if (place) await db.from("visit_events").update({ place }).eq("visitor_id", body.visitor).is("place", null).gte("created_at", new Date(Date.now() - 30 * 60e3).toISOString());
+      return;
+    }
+    const claims = await (await createClient()).auth.getClaims().catch(() => null);
+    const row = {
       visitor_id: body.visitor,
       user_id: claims?.data?.claims?.sub ?? null,
       event: body.event,
@@ -50,7 +57,10 @@ export async function POST(request: NextRequest) {
       ...parseAgent(ua),
       referrer: typeof body.referrer === "string" && body.referrer ? clip(body.referrer, 200) : null,
       ip_hash: ip ? createHash("sha256").update(`${day}:${salt}:${ip}`).digest("hex").slice(0, 32) : null,
-    });
+    };
+    // ponytail: the place column comes with migration 0015; until it exists, still log the visit without it
+    const { error } = await db.from("visit_events").insert({ ...row, place });
+    if (error && place) await db.from("visit_events").insert(row);
     // ponytail: no cron on the free plan, so roughly one request in a hundred clears rows past the retention window
     if (Math.random() < 0.01) await db.from("visit_events").delete().lt("created_at", new Date(Date.now() - KEEP_DAYS * 864e5).toISOString());
   });

@@ -18,3 +18,9 @@ export function parseSiteTheme(value: unknown): SiteThemeId {
   const id = (value as { id?: string } | null)?.id;
   return isSiteTheme(id) ? id : DEFAULT_SITE_THEME;
 }
+
+// A visitor may override the admin's theme on their own device (Pengaturan > Tampilan).
+export const VISITOR_THEME_KEY = "wiridku_theme_v1";
+
+// Runs in <head> before first paint so a chosen theme never flashes the admin's one; skipped in the admin panel.
+export const VISITOR_THEME_SCRIPT = `try{var t=localStorage.getItem("${VISITOR_THEME_KEY}");if(t&&${JSON.stringify(SITE_THEMES.map((theme) => theme.id))}.indexOf(t)>=0&&location.pathname.indexOf("/putrazea")!==0)document.documentElement.dataset.siteTheme=t}catch(e){}`;

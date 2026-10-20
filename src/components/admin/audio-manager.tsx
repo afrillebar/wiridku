@@ -1,5 +1,6 @@
 "use client";
 
+import { uuid } from "@/lib/uuid";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { removeAudio, saveAudio, updateAudioMeta } from "@/actions/audio";
@@ -80,7 +81,7 @@ export function AudioManager({
 
     setStage("uploading");
     const supabase = createClient();
-    const path = `${recitationId}/${crypto.randomUUID()}.mp3`;
+    const path = `${recitationId}/${uuid()}.mp3`;
     const send = () => supabase.storage.from("audio").upload(path, file, { contentType: "audio/mpeg", cacheControl: "31536000", upsert: false });
     let up = await send();
     // ponytail: a dropped connection looks like "Failed to fetch"; the path is unique, so one retry cannot create a duplicate

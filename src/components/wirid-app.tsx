@@ -1,14 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import type { Phase, Recitation } from "@/lib/content";
 import { readPlace, useFontStep, useProgress, writePlace } from "@/lib/progress";
 import { AudioBar, AudioButton, AudioProvider, OfflineControl, type Track } from "./audio";
-import { InstallPrompt } from "./install-prompt";
 import { YoutubeEmbed } from "./youtube-embed";
 import { TasbihBox } from "./tasbih-box";
 import { splitSurahParts } from "@/lib/surah-parts";
-import { track } from "@/lib/track";
 
 export function WiridApp({ phases, preview = false }: { phases: Phase[]; preview?: boolean }) {
   const ids = useMemo(() => phases.flatMap((p) => p.recitations.map((r) => r.slug)), [phases]);
@@ -23,9 +22,8 @@ export function WiridApp({ phases, preview = false }: { phases: Phase[]; preview
 
   useEffect(() => {
     const id = location.hash.slice(1) || (!preview ? readPlace() : null);
-    if (!id || !document.getElementById(id)) return;
-    document.getElementById(id)?.scrollIntoView();
-    setFocus(id);
+    // ponytail: the scroll reader below runs on the next frame and picks this card as the focus
+    if (id) document.getElementById(id)?.scrollIntoView();
   }, [preview]);
 
   useEffect(() => {
@@ -34,6 +32,8 @@ export function WiridApp({ phases, preview = false }: { phases: Phase[]; preview
     let seenPlace = phases[0]?.slug ?? "";
     const readPosition = () => {
       frame = 0;
+      // ponytail: Next keeps this page mounted but display:none after navigating away; hidden cards all report offsetTop 0
+      if (!document.getElementById(phases[0]?.slug ?? "")?.offsetParent) return;
       const pos = window.scrollY + 200;
       let phase = phases[0]?.slug;
       let place = phase ?? "";
@@ -70,30 +70,22 @@ export function WiridApp({ phases, preview = false }: { phases: Phase[]; preview
     };
   }, [phases, preview]);
 
-  useEffect(() => {
-    if (!preview) track("view");
-  }, [preview]);
-
-  useEffect(() => {
-    // ponytail: production only, a dev-mode worker would serve stale hot-reload bundles
-    if (preview || process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) return;
-    navigator.serviceWorker
-      .register("/sw.js")
-      .then(() => navigator.serviceWorker.ready)
-      .then((reg) => {
-        const urls = performance.getEntriesByType("resource").map((e) => e.name);
-        reg.active?.postMessage({ type: "cache-assets", urls });
-      })
-      .catch(() => {});
-  }, [preview]);
-
   return (
     <AudioProvider queue={queue}>
     <div style={{ "--ar-step": step } as CSSProperties}>
       <header className="top">
         <div className="top-inner">
           <div className="title-row">
-            <h1>Wiridku</h1>
+            <div className="title-left">
+              {!preview && (
+                <Link href="/" className="back-btn" aria-label="Kembali ke Beranda" data-tip="Kembali ke Beranda" data-tip-align="start">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M15 5l-7 7 7 7" />
+                  </svg>
+                </Link>
+              )}
+              <h1>Wirid Salat</h1>
+            </div>
             <span className="streak" aria-label={`Beruntun ${streak} hari`}>
               🔥 {streak}
             </span>
@@ -108,10 +100,10 @@ export function WiridApp({ phases, preview = false }: { phases: Phase[]; preview
               ))}
             </nav>
             <div className="font-ctrl">
-              <button type="button" className="font-btn" aria-label="Perkecil teks Arab" disabled={step <= minStep} onClick={() => setStep(step - 1)}>
+              <button type="button" className="font-btn" aria-label="Perkecil teks Arab" data-tip="Perkecil teks Arab" disabled={step <= minStep} onClick={() => setStep(step - 1)}>
                 A−
               </button>
-              <button type="button" className="font-btn" aria-label="Perbesar teks Arab" disabled={step >= maxStep} onClick={() => setStep(step + 1)}>
+              <button type="button" className="font-btn" aria-label="Perbesar teks Arab" data-tip="Perbesar teks Arab" data-tip-align="end" disabled={step >= maxStep} onClick={() => setStep(step + 1)}>
                 A+
               </button>
             </div>
@@ -171,8 +163,6 @@ export function WiridApp({ phases, preview = false }: { phases: Phase[]; preview
           Disusun untuk penggunaan pribadi.
         </p>
       </footer>
-
-      {!preview && <InstallPrompt />}
     </div>
     </AudioProvider>
   );
@@ -229,7 +219,7 @@ function Card({ r, done, onToggle }: { r: Recitation; done: boolean; onToggle: (
         </div>
         <div className="card-actions">
           {track && <AudioButton track={track} />}
-          <button type="button" className="check-btn" aria-pressed={done} aria-label={`Tandai selesai: ${r.title}`} onClick={onToggle}>
+          <button type="button" className="check-btn" aria-pressed={done} aria-label={`Tandai selesai: ${r.title}`} data-tip={done ? "Batalkan tanda selesai" : "Tandai selesai"} data-tip-align="end" onClick={onToggle}>
             ✓
           </button>
         </div>
