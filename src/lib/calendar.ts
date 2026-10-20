@@ -23,6 +23,24 @@ export function dayInfo(y: number, m: number, d: number): DayInfo {
   return { y, m, d, weekday, pasaran: PASARAN[p], neptu: NEPTU_HARI[weekday] + NEPTU_PASARAN[p], hijri: { day: parts.day, month: parts.month, year: parts.year } };
 }
 
+// The Hijri years the page can reach (it stops at 1900 and 2100)
+export const HIJRI_YEARS = [dayInfo(1900, 1, 1).hijri.year, dayInfo(2100, 12, 31).hijri.year] as const;
+
+// Which Gregorian day has this Hijri date? An estimate from the mean lunar year, then the exact day Umm al-Qura gives.
+// Returns null when no such date exists (e.g. day 30 of a 29-day month). Day 0 means "the 1st".
+export function fromHijri(year: number, month: number, day: number): { y: number; m: number; d: number } | null {
+  // 1 Muharram 1 AH (civil) is day -492148 counted from 1 January 1970
+  const guess = Math.round(-492148 + (year - 1) * 354.36707 + (month - 1) * 29.530589 + (day || 1) - 1);
+  for (let off = 0; off <= 30; off++) {
+    for (const sign of off ? [-1, 1] : [1]) {
+      const at = new Date((guess + sign * off) * 864e5);
+      const info = dayInfo(at.getUTCFullYear(), at.getUTCMonth() + 1, at.getUTCDate());
+      if (info.hijri.year === year && info.hijri.month === month && info.hijri.day === (day || 1)) return { y: info.y, m: info.m, d: info.d };
+    }
+  }
+  return null;
+}
+
 // What the page marks under a date. Sunnah fasting follows the usual rules: Monday and Thursday, and the "white days" (Hijri 13-15).
 // No fasting marker in Ramadan (it is obligatory then) and none on the days when fasting is forbidden: 1 Syawal, 10 Zulhijah and the tasyrik days 11-13 Zulhijah.
 export type Marker = { kind: "besar" | "jumat" | "bidh" | "puasa"; label: string };

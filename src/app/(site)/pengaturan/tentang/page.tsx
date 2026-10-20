@@ -1,8 +1,16 @@
 import type { Metadata } from "next";
-import { SubPage } from "@/components/settings";
+import { AboutList, SubPage } from "@/components/settings";
 import pkg from "../../../../../package.json";
 
 export const metadata: Metadata = { title: "Tentang Wiridku" };
+
+const FEATURES = [
+  ["Wirid Salat", "Bacaan wirid dan doa setelah salat fardu, berurutan, lengkap dengan sumber dalil."],
+  ["Jadwal Salat", "Waktu salat dan Imsak untuk kota pilihan atau lokasi GPS Anda."],
+  ["Kalender", "Tanggal Masehi, Hijriah, dan pasaran Jawa, lengkap dengan hari besar Islam."],
+  ["Tasbih", "Penghitung dzikir yang tersimpan di perangkat."],
+  ["Arah Kiblat", "Arah Kiblat dari posisi Anda, dengan kompas di ponsel."],
+] as const;
 
 export default function AboutPage() {
   const build = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7);
@@ -22,27 +30,11 @@ export default function AboutPage() {
 
       <section className="set-card">
         <p className="set-label">Tentang</p>
-        <p className="set-text">Panduan wirid dan doa setelah salat fardu, disusun berurutan, dengan sumber dalil di setiap bacaan. Disusun untuk penggunaan pribadi.</p>
+        <p className="set-text">Teman ibadah sehari-hari: wirid dan doa setelah salat fardu, jadwal salat, kalender, tasbih, dan arah Kiblat. Disusun untuk penggunaan pribadi.</p>
+        <AboutList items={FEATURES} />
       </section>
 
-      <section className="set-card">
-        <p className="set-label">Sumber data</p>
-        <ul className="set-bullets">
-          <li>Teks ayat dicocokkan dengan mushaf Tanzil (api.alquran.cloud). Teks hadis dicocokkan dengan kitab hadis yang dirujuk di tiap bacaan.</li>
-          <li>Jadwal salat: Kementerian Agama RI (Bimas Islam), lewat api.myquran.com. Untuk lokasi GPS, waktu dihitung di perangkat dengan kriteria Kemenag. Nama daerah dari BigDataCloud dan OpenStreetMap.</li>
-          <li>Audio: rekaman bacaan dari sumber terbuka. Bacaan yang memakai suara sintetis diberi tanda.</li>
-        </ul>
-      </section>
-
-      <section className="set-card">
-        <p className="set-label">Privasi</p>
-        <ul className="set-bullets">
-          <li>Progres, posisi bacaan, lokasi, dan pengaturan hanya disimpan di perangkat Anda. Tidak ada akun pengunjung.</li>
-          <li>Posisi GPS hanya dibaca saat Anda menekan tombol GPS. Waktu salat dihitung di perangkat. Untuk mendapatkan nama daerah, koordinat (dibulatkan sekitar 100 m) dikirim sekali ke layanan BigDataCloud, dengan Nominatim OpenStreetMap sebagai cadangan; Wiridku tidak menyimpannya di server.</li>
-          <li>Saat pertama kali membuka situs lewat https, browser meminta izin lokasi satu kali. Jika diizinkan, kartu jadwal langsung memakai daerah Anda, dan nama daerahnya (mis. Jakarta Pusat, tanpa koordinat) dicatat di statistik kunjungan admin. Jika ditolak, tidak ditanya lagi dan Anda bisa memilih kota sendiri.</li>
-          <li>Untuk mengetahui pemakaian, situs mencatat kunjungan dan pemutaran audio dengan ID acak, tanpa alamat IP.</li>
-        </ul>
-      </section>
+      <p className="set-note about-foot">Sumber data dan kebijakan privasi ada di menu Pengaturan: Informasi Data dan Kebijakan Privasi.</p>
     </SubPage>
   );
 }

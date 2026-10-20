@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
-import { MONTHS, WEEKDAYS, dayInfo, hijriRange, hijriText, markers, type DayInfo } from "@/lib/calendar";
+import { HIJRI_MONTHS, HIJRI_YEARS, MONTHS, WEEKDAYS, dayInfo, fromHijri, hijriRange, hijriText, markers, type DayInfo } from "@/lib/calendar";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const iso = (y: number, m: number, d: number) => `${y}-${pad(m)}-${pad(d)}`;
@@ -33,6 +33,9 @@ export function Kalender() {
   const now = useSyncExternalStore(subscribeDay, today, () => "");
   const [shownMonth, setShownMonth] = useState<{ y: number; m: number } | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
+  const [jump, setJump] = useState(false);
+  const [jumpError, setJumpError] = useState("");
+  const [jumpMode, setJumpMode] = useState<"masehi" | "hijriah">("masehi");
   const touch = useRef<{ x: number; y: number } | null>(null);
 
   const view = shownMonth ?? (now ? { y: Number(now.slice(0, 4)), m: Number(now.slice(5, 7)) } : null);
@@ -61,11 +64,43 @@ export function Kalender() {
     setShownMonth(null);
     setPicked(null);
   };
+  // "Cari tanggal": any month and year (and optionally a day), in the Masehi or the Hijri calendar
+  const resolve = (form: FormData): { target: { y: number; m: number; d: number }; typedDay: boolean } | { error: string } => {
+    const y = Number(String(form.get("y")).trim());
+    const m = Number(form.get("m"));
+    const dRaw = String(form.get("d") ?? "").trim();
+    const d = dRaw === "" ? 0 : Number(dRaw);
+    if (jumpMode === "hijriah") {
+      if (!Number.isInteger(y) || y < HIJRI_YEARS[0] || y > HIJRI_YEARS[1]) return { error: `Tahun Hijriah harus berupa angka antara ${HIJRI_YEARS[0]} dan ${HIJRI_YEARS[1]}.` };
+      if (dRaw !== "" && (!Number.isInteger(d) || d < 1 || d > 30)) return { error: "Tanggal Hijriah berupa angka 1-30. Kosongkan untuk tanggal 1." };
+      const hit = fromHijri(y, m, d);
+      if (!hit) return { error: `${HIJRI_MONTHS[m - 1]} ${y} H hanya punya 29 hari. Kosongkan tanggal atau isi 1-29.` };
+      if (hit.y < FIRST_YEAR || hit.y > LAST_YEAR) return { error: `Tanggal itu di luar rentang kalender (${FIRST_YEAR}-${LAST_YEAR} M).` };
+      return { target: hit, typedDay: true };
+    }
+    if (!Number.isInteger(y) || y < FIRST_YEAR || y > LAST_YEAR) return { error: `Tahun harus berupa angka antara ${FIRST_YEAR} dan ${LAST_YEAR}.` };
+    const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    if (dRaw !== "" && (!Number.isInteger(d) || d < 1 || d > days)) return { error: `${MONTHS[m - 1]} ${y} hanya punya ${days} hari. Kosongkan tanggal atau isi 1-${days}.` };
+    return { target: { y, m, d: d || 1 }, typedDay: d > 0 };
+  };
+
+  // live: used while typing, so half-typed years are skipped quietly; submit: errors are shown and the panel closes
+  const search = (form: FormData, live: boolean) => {
+    const r = resolve(form);
+    if ("error" in r) return live ? undefined : setJumpError(r.error);
+    setJumpError("");
+    if (!live) setJump(false);
+    setShownMonth({ y: r.target.y, m: r.target.m });
+    // Masehi without a day: the 1st, or today when that month is the current one; otherwise the date found
+    setPicked(jumpMode === "masehi" && !r.typedDay && now.slice(0, 7) === `${r.target.y}-${pad(r.target.m)}` ? null : iso(r.target.y, r.target.m, r.target.d));
+  };
+
   const pick = (c: DayInfo & { out: boolean }) => {
     setPicked(iso(c.y, c.m, c.d));
     if (c.out) goTo(c.y, c.m);
   };
 
+  const midHijri = view ? dayInfo(view.y, view.m, 15).hijri : { day: 1, month: 1, year: HIJRI_YEARS[0] };
   const chosen = selected ? dayInfo(Number(selected.slice(0, 4)), Number(selected.slice(5, 7)), Number(selected.slice(8, 10))) : null;
 
   const chosenMarks = chosen ? markers(chosen) : [];
@@ -109,11 +144,79 @@ export function Kalender() {
             <path d="M9 5l7 7-7 7" />
           </Icon>
         </button>
-        <h2>{view ? `${MONTHS[view.m - 1]} ${view.y}` : " "}</h2>
+        <h2>
+          <button type="button" className="cal-title" onClick={() => setJump((j) => !j)} aria-expanded={jump} disabled={!view} data-tip="Cari tanggal, bulan, atau tahun lain">
+            {view ? `${MONTHS[view.m - 1]} ${view.y}` : " "}
+            <Icon size={16}>
+              <path d="M6 9l6 6 6-6" />
+            </Icon>
+          </button>
+        </h2>
         <button type="button" className="cal-today" onClick={toToday} data-tip="Kembali ke hari ini" data-tip-align="end">
           Hari Ini
         </button>
       </div>
+      <button type="button" className="cal-find" onClick={() => setJump((j) => !j)} aria-expanded={jump} disabled={!view}>
+        <Icon size={16}>
+          <circle cx="11" cy="11" r="7" />
+          <path d="M20 20l-3.5-3.5" />
+        </Icon>
+        Cari tanggal, bulan, atau tahun
+      </button>
+      {jump && view && (
+        <form
+          key={jumpMode}
+          className="cal-jump"
+          onSubmit={(e) => {
+            e.preventDefault();
+            search(new FormData(e.currentTarget), false);
+          }}
+          onChange={(e) => search(new FormData(e.currentTarget), true)}
+          onKeyDown={(e) => e.key === "Escape" && setJump(false)}
+        >
+          <div className="cal-jump-mode" role="group" aria-label="Kalender">
+            {(["masehi", "hijriah"] as const).map((k) => (
+              <button
+                key={k}
+                type="button"
+                aria-pressed={jumpMode === k}
+                onClick={() => {
+                  setJumpMode(k);
+                  setJumpError("");
+                }}
+              >
+                {k === "masehi" ? "Masehi" : "Hijriah"}
+              </button>
+            ))}
+          </div>
+          <label>
+            Tanggal
+            <input name="d" inputMode="numeric" placeholder={jumpMode === "masehi" ? "1-31" : "1-30"} autoComplete="off" maxLength={2} />
+          </label>
+          <label>
+            Bulan
+            <select name="m" defaultValue={jumpMode === "masehi" ? view.m : midHijri.month}>
+              {(jumpMode === "masehi" ? MONTHS : HIJRI_MONTHS).map((n, i) => (
+                <option key={n} value={i + 1}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Tahun{jumpMode === "hijriah" ? " (H)" : ""}
+            <input name="y" inputMode="numeric" defaultValue={jumpMode === "masehi" ? view.y : midHijri.year} autoComplete="off" maxLength={4} autoFocus />
+          </label>
+          <button type="submit" className="cal-jump-go">
+            Lihat
+          </button>
+          {jumpError && (
+            <p className="cal-jump-err" role="alert">
+              {jumpError}
+            </p>
+          )}
+        </form>
+      )}
       <p className="cal-hint">← Geser kanan / kiri untuk ganti bulan →</p>
 
       <div
@@ -143,7 +246,6 @@ export function Kalender() {
               <button key={key} type="button" className={cls} onClick={() => pick(c)} aria-pressed={key === selected} aria-current={key === now ? "date" : undefined} aria-label={[`${WEEKDAYS[c.weekday]} ${c.pasaran}, ${c.d} ${MONTHS[c.m - 1]} ${c.y}, ${hijriText(c.hijri)} H`, ...c.marks.map((k) => k.label)].join(", ")}>
                 <span className="cal-num">{c.d}</span>
                 <span className="cal-pas">{c.pasaran}</span>
-                <span className="cal-hij">{c.hijri.day}</span>
                 <span className="cal-dots" aria-hidden="true">
                   {c.marks.filter((k) => k.kind !== "jumat").map((k) => (
                     <i key={k.kind} className={`cal-dot ${k.kind}`} />

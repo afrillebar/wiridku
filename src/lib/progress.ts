@@ -86,17 +86,34 @@ export function useProgress(validIds: string[]) {
   return { done, streak: Number(streakRaw), toggle };
 }
 
-export function useFontStep() {
-  const raw = useSyncExternalStore(
-    subscribe,
-    () => {
-      const n = read(FONT_KEY);
-      return String(clampStep(typeof n === "number" ? n : 0));
-    },
-    () => "0",
-  );
-  const setStep = useCallback((step: number) => write(FONT_KEY, clampStep(step)), []);
-  return { step: Number(raw), setStep, min: MIN_STEP, max: MAX_STEP };
+// What the reader shows and how big. Sizes are in px; ranges and defaults are shared with the settings page.
+export const TEXT_LIMITS = { arab: [20, 48], latin: [11, 24], arti: [11, 24] } as const;
+export const TEXT_DEFAULTS = { arab: 27, latin: 15, arti: 14 } as const;
+export type TextPrefs = { showLatin: boolean; showArti: boolean; arab: number; latin: number; arti: number };
+const TEXT_KEY = "wirid_text_v1";
+
+const px = (n: unknown, [lo, hi]: readonly [number, number], fallback: number) => (typeof n === "number" && Number.isFinite(n) ? Math.min(hi, Math.max(lo, Math.round(n))) : fallback);
+
+const readText = (): TextPrefs => {
+  const s = (read(TEXT_KEY) ?? {}) as Partial<TextPrefs>;
+  // ponytail: a visitor who sized the Arabic text with the old steps (about 3 px each) keeps that size
+  const old = read(FONT_KEY);
+  const fromStep = Math.round(TEXT_DEFAULTS.arab + clampStep(typeof old === "number" ? old : 0) * 2.88);
+  return {
+    showLatin: s.showLatin !== false,
+    showArti: s.showArti !== false,
+    arab: px(s.arab, TEXT_LIMITS.arab, px(fromStep, TEXT_LIMITS.arab, TEXT_DEFAULTS.arab)),
+    latin: px(s.latin, TEXT_LIMITS.latin, TEXT_DEFAULTS.latin),
+    arti: px(s.arti, TEXT_LIMITS.arti, TEXT_DEFAULTS.arti),
+  };
+};
+const TEXT_SERVER = JSON.stringify({ showLatin: true, showArti: true, ...TEXT_DEFAULTS });
+
+export function useTextPrefs() {
+  const raw = useSyncExternalStore(subscribe, () => JSON.stringify(readText()), () => TEXT_SERVER);
+  const prefs = useMemo(() => JSON.parse(raw) as TextPrefs, [raw]);
+  const set = useCallback((patch: Partial<TextPrefs>) => write(TEXT_KEY, { ...readText(), ...patch }), []);
+  return { ...prefs, set };
 }
 
 export function readPlace() {

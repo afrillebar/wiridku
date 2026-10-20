@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import type { Phase, Recitation } from "@/lib/content";
-import { readPlace, useFontStep, useProgress, writePlace } from "@/lib/progress";
+import { TEXT_LIMITS, readPlace, useProgress, useTextPrefs, writePlace } from "@/lib/progress";
 import { AudioBar, AudioButton, AudioProvider, OfflineControl, type Track } from "./audio";
 import { YoutubeEmbed } from "./youtube-embed";
 import { TasbihBox } from "./tasbih-box";
@@ -12,7 +12,7 @@ import { splitSurahParts } from "@/lib/surah-parts";
 export function WiridApp({ phases, preview = false }: { phases: Phase[]; preview?: boolean }) {
   const ids = useMemo(() => phases.flatMap((p) => p.recitations.map((r) => r.slug)), [phases]);
   const { done, streak, toggle } = useProgress(ids);
-  const { step, setStep, min: minStep, max: maxStep } = useFontStep();
+  const { arab, latin, arti, set } = useTextPrefs();
   const [active, setActive] = useState(phases[0]?.slug);
   const [focus, setFocus] = useState(phases[0]?.slug ?? "");
   const queue = useMemo(
@@ -72,7 +72,7 @@ export function WiridApp({ phases, preview = false }: { phases: Phase[]; preview
 
   return (
     <AudioProvider queue={queue}>
-    <div style={{ "--ar-step": step } as CSSProperties}>
+    <div style={{ "--ar-size": `${arab}px`, "--latin-size": `${latin}px`, "--arti-size": `${arti}px` } as CSSProperties}>
       <header className="top">
         <div className="top-inner">
           <div className="title-row">
@@ -100,10 +100,10 @@ export function WiridApp({ phases, preview = false }: { phases: Phase[]; preview
               ))}
             </nav>
             <div className="font-ctrl">
-              <button type="button" className="font-btn" aria-label="Perkecil teks Arab" data-tip="Perkecil teks Arab" disabled={step <= minStep} onClick={() => setStep(step - 1)}>
+              <button type="button" className="font-btn" aria-label="Perkecil teks Arab" data-tip="Perkecil teks Arab" disabled={arab <= TEXT_LIMITS.arab[0]} onClick={() => set({ arab: arab - 3 })}>
                 A−
               </button>
-              <button type="button" className="font-btn" aria-label="Perbesar teks Arab" data-tip="Perbesar teks Arab" data-tip-align="end" disabled={step >= maxStep} onClick={() => setStep(step + 1)}>
+              <button type="button" className="font-btn" aria-label="Perbesar teks Arab" data-tip="Perbesar teks Arab" data-tip-align="end" disabled={arab >= TEXT_LIMITS.arab[1]} onClick={() => set({ arab: arab + 3 })}>
                 A+
               </button>
             </div>
@@ -169,6 +169,7 @@ export function WiridApp({ phases, preview = false }: { phases: Phase[]; preview
 }
 
 function Reading({ r }: { r: Recitation }) {
+  const { showLatin, showArti } = useTextPrefs();
   const parts = splitSurahParts(r);
   if (!parts) {
     return (
@@ -178,8 +179,8 @@ function Reading({ r }: { r: Recitation }) {
             {r.arabic_text}
           </p>
         )}
-        {r.transliteration && <p className="latin">{r.transliteration}</p>}
-        {r.translation && (
+        {showLatin && r.transliteration && <p className="latin">{r.transliteration}</p>}
+        {showArti && r.translation && (
           <>
             <p className="arti-label">Arti</p>
             <p className="arti">{r.translation}</p>
@@ -195,9 +196,13 @@ function Reading({ r }: { r: Recitation }) {
       <p className="arabic" dir="rtl" lang="ar">
         {part.arabic}
       </p>
-      <p className="latin">{part.latin}</p>
-      <p className="arti-label">Arti</p>
-      <p className="arti">{part.translation}</p>
+      {showLatin && <p className="latin">{part.latin}</p>}
+      {showArti && (
+        <>
+          <p className="arti-label">Arti</p>
+          <p className="arti">{part.translation}</p>
+        </>
+      )}
     </section>
   ));
 }

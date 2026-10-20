@@ -122,11 +122,12 @@ function zoned(seconds: number, zone: Zone) {
 }
 const isoDate = (t: { y: number; m: number; d: number }) => `${t.y}-${pad(t.m)}-${pad(t.d)}`;
 
+// "dalam 1 jam 39 menit", plainly, or "sebentar lagi" for the last minute
 function until(minutes: number) {
-  if (minutes < 1) return "kurang dari 1 menit lagi";
+  if (minutes < 1) return "sebentar lagi";
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  return `${h ? `${h} jam ` : ""}${m ? `${m} menit ` : ""}lagi`;
+  return `dalam ${[h && `${h} jam`, m && `${m} menit`].filter(Boolean).join(" ")}`;
 }
 
 // ---------- city picker ----------
@@ -490,10 +491,7 @@ export function PrayerCard() {
         <p className="hero-next">
           {next ? (
             <>
-              <strong>
-                Menuju {next.label}
-                {next.tomorrow ? " besok" : ""}:
-              </strong>
+              <strong>{next.label}</strong>
               {` ${until(left)}`}
             </>
           ) : (

@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { LocationPicker, cityKey, clearPrayerData, placeName, pretty, useCity, useSavedMonths } from "./prayer-card";
 import { saveAutoplay, useAutoplay } from "./audio";
-import { clearPlace, clearProgress, useFontStep, useProgressSummary } from "@/lib/progress";
+import { TEXT_DEFAULTS, TEXT_LIMITS, clearPlace, clearProgress, useProgressSummary, useTextPrefs } from "@/lib/progress";
 import { zoneByOffset, zoneOf } from "@/lib/prayer";
 import { SITE_THEMES, VISITOR_THEME_KEY, type SiteThemeId } from "@/lib/site-theme";
 
@@ -38,32 +38,162 @@ export function SubPage({ title, back = "/pengaturan", children }: { title: stri
 
 const MENU = [
   { href: "/pengaturan/lokasi", title: "Lokasi & Jadwal Salat", hint: "Kota dan sumber jadwal", icon: <><path d="M12 21s-6-5.4-6-10.5a6 6 0 0 1 12 0C18 15.6 12 21 12 21z" /><circle cx="12" cy="10.5" r="2" /></> },
-  { href: "/pengaturan/tampilan", title: "Tampilan", hint: "Tema, ukuran teks, dan bahasa", icon: <><path d="M12 3a9 9 0 1 0 0 18c1 0 1.6-.8 1.6-1.6 0-.5-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5C21 6.6 17 3 12 3z" /><circle cx="7.5" cy="11" r="1" fill="currentColor" /><circle cx="10" cy="7" r="1" fill="currentColor" /><circle cx="14.5" cy="7" r="1" fill="currentColor" /></> },
+  { href: "/pengaturan/tampilan", title: "Tampilan", hint: "Tema warna dan bahasa", icon: <><path d="M12 3a9 9 0 1 0 0 18c1 0 1.6-.8 1.6-1.6 0-.5-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5C21 6.6 17 3 12 3z" /><circle cx="7.5" cy="11" r="1" fill="currentColor" /><circle cx="10" cy="7" r="1" fill="currentColor" /><circle cx="14.5" cy="7" r="1" fill="currentColor" /></> },
+  { href: "/pengaturan/bacaan", title: "Tampilan Bacaan", hint: "Latin, terjemahan, dan ukuran huruf", icon: <><path d="M3 5.5c2.5-1 5.5-1 8 .5v13c-2.5-1.5-5.5-1.5-8-.5z" /><path d="M21 5.5c-2.5-1-5.5-1-8 .5v13c2.5-1.5 5.5-1.5 8-.5z" /></> },
   { href: "/pengaturan/audio", title: "Audio", hint: "Pemutaran suara bacaan", icon: <><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" /><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" /></> },
   { href: "/pengaturan/data", title: "Penyimpanan Data", hint: "Progres, jadwal, dan audio tersimpan", icon: <><ellipse cx="12" cy="6" rx="7" ry="3" /><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" /></> },
-  { href: "/pengaturan/tentang", title: "Tentang Wiridku", hint: "Versi aplikasi dan sumber data", icon: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></> },
-];
+  { dialog: "data", title: "Informasi Data", hint: "Sumber teks, jadwal, kalender, dan audio", icon: <><path d="M7 3h7l5 5v13H7z" /><path d="M14 3v5h5M10 13h6M10 17h6" /></> },
+  { dialog: "privasi", title: "Kebijakan Privasi", hint: "Data yang disimpan dan yang dikirim", icon: <><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z" /><path d="m9 12 2 2 4-4" /></> },
+  { href: "/pengaturan/tentang", title: "Tentang Wiridku", hint: "Versi dan fitur aplikasi", icon: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></> },
+] as const;
+
+// ---------- what the two dialogs say ----------
+export const SOURCES = [
+  ["Ayat Al-Qur'an", "Dicocokkan dengan mushaf Tanzil (api.alquran.cloud)."],
+  ["Hadis", "Dicocokkan dengan kitab hadis yang dirujuk di tiap bacaan."],
+  ["Jadwal salat", "Kementerian Agama RI (Bimas Islam), lewat api.myquran.com."],
+  ["Lokasi GPS", "Waktu salat dihitung di perangkat Anda dengan kriteria Kemenag. Nama daerahnya dicari lewat BigDataCloud dan OpenStreetMap."],
+  ["Kalender", "Tanggal Hijriah mengikuti kalender Umm al-Qura, jadi bisa berbeda satu hari dari penetapan pemerintah. Pasaran Jawa dihitung dari tanggal."],
+  ["Arah Kiblat", "Dihitung dari koordinat Anda ke Ka'bah, tanpa layanan luar."],
+  ["Audio", "Rekaman dari sumber terbuka. Bacaan yang memakai suara sintetis diberi tanda."],
+] as const;
+
+export const PRIVACY = [
+  ["Tersimpan di perangkat", "Progres, posisi bacaan, lokasi, hitungan tasbih, dan pengaturan hanya ada di perangkat Anda. Tidak ada akun pengunjung."],
+  ["Izin lokasi", "Saat pertama kali membuka situs lewat https, browser meminta izin lokasi satu kali. Jika diizinkan, kartu jadwal langsung memakai daerah Anda. Jika ditolak, Anda tidak ditanya lagi dan bisa memilih kota sendiri."],
+  ["Koordinat", "Waktu salat dan arah Kiblat dihitung di perangkat. Untuk mencari nama daerah, koordinat (dibulatkan sekitar 100 m) dikirim sekali ke BigDataCloud, dengan OpenStreetMap sebagai cadangan. Wiridku tidak menyimpannya."],
+  ["Statistik kunjungan", "Situs mencatat kunjungan dan pemutaran audio dengan kode acak. Alamat IP tidak disimpan; hanya perkiraan negara dan kota dari IP, serta kode yang berganti tiap hari. Jika Anda memberi izin lokasi, nama daerah (tanpa koordinat) ikut dicatat."],
+] as const;
+
+const DIALOGS = {
+  data: { title: "Informasi Data", items: SOURCES },
+  privasi: { title: "Kebijakan Privasi", items: PRIVACY },
+} as const;
+
+export function AboutList({ items }: { items: readonly (readonly [string, string])[] }) {
+  return (
+    <dl className="about-list">
+      {items.map(([title, text]) => (
+        <div key={title}>
+          <dt>{title}</dt>
+          <dd>{text}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+// A centred dialog like the ones in other prayer apps: title, a close cross, the content, one OK button.
+function Dialog({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+  const box = useRef<HTMLDivElement>(null);
+  const ok = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    ok.current?.focus();
+    const lock = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = lock;
+    };
+  }, []);
+
+  // ponytail: Tab stays inside the dialog, as a modal dialog should
+  const keys = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") return onClose();
+    if (e.key !== "Tab") return;
+    const stops = box.current?.querySelectorAll<HTMLElement>("button, input");
+    if (!stops?.length) return;
+    const first = stops[0];
+    const last = stops[stops.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
+
+  return (
+    <div className="dlg-backdrop" onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-title" ref={box} onKeyDown={keys}>
+        <div className="dlg-head">
+          <h2 id="dlg-title">{title}</h2>
+          <button type="button" className="icon-btn" aria-label="Tutup" data-tip="Tutup" data-tip-align="end" onClick={onClose}>
+            <Icon size={22}>
+              <path d="M6 6l12 12M18 6 6 18" />
+            </Icon>
+          </button>
+        </div>
+        <div className="dlg-body">{children}</div>
+        <div className="dlg-foot">
+          <button type="button" className="dlg-ok" ref={ok} onClick={onClose}>
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InfoDialog({ title, items, onClose }: { title: string; items: readonly (readonly [string, string])[]; onClose: () => void }) {
+  return (
+    <Dialog title={title} onClose={onClose}>
+      <AboutList items={items} />
+    </Dialog>
+  );
+}
 
 export function SettingsMenu() {
+  const [open, setOpen] = useState<keyof typeof DIALOGS | null>(null);
+  const opener = useRef<HTMLElement | null>(null);
+  const close = () => {
+    setOpen(null);
+    opener.current?.focus();
+  };
   return (
-    <ul className="set-list">
-      {MENU.map((m) => (
-        <li key={m.href}>
-          <Link href={m.href} className="set-row">
-            <span className="set-icon">
-              <Icon>{m.icon}</Icon>
-            </span>
-            <span className="set-text">
-              <strong>{m.title}</strong>
-              <span>{m.hint}</span>
-            </span>
-            <Icon size={18}>
-              <path d="m9 6 6 6-6 6" />
-            </Icon>
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <>
+      <ul className="set-list">
+        {MENU.map((m) => {
+          const inner = (
+            <>
+              <span className="set-icon">
+                <Icon>{m.icon}</Icon>
+              </span>
+              <span className="set-text">
+                <strong>{m.title}</strong>
+                <span>{m.hint}</span>
+              </span>
+              <Icon size={18}>
+                <path d="m9 6 6 6-6 6" />
+              </Icon>
+            </>
+          );
+          return (
+            <li key={m.title}>
+              {"href" in m ? (
+                <Link href={m.href} className="set-row">
+                  {inner}
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className="set-row"
+                  aria-haspopup="dialog"
+                  onClick={(e) => {
+                    opener.current = e.currentTarget;
+                    setOpen(m.dialog);
+                  }}
+                >
+                  {inner}
+                </button>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      {open && <InfoDialog title={DIALOGS[open].title} items={DIALOGS[open].items} onClose={close} />}
+    </>
   );
 }
 
@@ -133,7 +263,6 @@ const subscribeTheme = (cb: () => void) => {
 export function DisplaySettings({ siteTheme }: { siteTheme: SiteThemeId }) {
   const stored = useSyncExternalStore(subscribeTheme, readVisitorTheme, () => "?");
   const mine = stored === "?" ? undefined : ((stored || null) as SiteThemeId | null);
-  const { step, setStep, min, max } = useFontStep();
 
   const pick = (id: SiteThemeId | null) => {
     try {
@@ -167,24 +296,6 @@ export function DisplaySettings({ siteTheme }: { siteTheme: SiteThemeId }) {
       </section>
 
       <section className="set-card">
-        <p className="set-label">Ukuran teks Arab</p>
-        <p className="arabic set-sample" lang="ar" style={{ "--ar-step": step } as CSSProperties}>
-          بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-        </p>
-        <div className="set-row-actions">
-          <button type="button" className="font-btn" aria-label="Perkecil teks Arab" data-tip="Perkecil teks Arab" data-tip-align="start" disabled={step <= min} onClick={() => setStep(step - 1)}>
-            A−
-          </button>
-          <button type="button" className="font-btn" aria-label="Perbesar teks Arab" data-tip="Perbesar teks Arab" data-tip-align="start" disabled={step >= max} onClick={() => setStep(step + 1)}>
-            A+
-          </button>
-          <button type="button" className="text-btn" disabled={step === 0} onClick={() => setStep(0)}>
-            Ukuran awal
-          </button>
-        </div>
-      </section>
-
-      <section className="set-card">
         <p className="set-label">Bahasa</p>
         <p className="set-value">Bahasa Indonesia</p>
         <p className="set-note">Bahasa lain belum tersedia.</p>
@@ -200,6 +311,118 @@ function Swatch({ colors }: { colors: readonly string[] }) {
         <span key={c} style={{ background: c }} />
       ))}
     </span>
+  );
+}
+
+// ---------- Tampilan Bacaan ----------
+
+type SizeKind = "arab" | "latin" | "arti";
+const SIZES: readonly { kind: SizeKind; label: string; title: string }[] = [
+  { kind: "arab", label: "Teks Arab", title: "Ukuran teks Arab" },
+  { kind: "latin", label: "Latin", title: "Ukuran teks latin" },
+  { kind: "arti", label: "Terjemahan", title: "Ukuran terjemahan" },
+];
+
+// the slider shows what the reader will look like, as it moves
+function SizeDialog({ kind, onClose }: { kind: SizeKind; onClose: () => void }) {
+  const p = useTextPrefs();
+  const [lo, hi] = TEXT_LIMITS[kind];
+  const value = p[kind];
+  const title = SIZES.find((s) => s.kind === kind)!.title;
+  return (
+    <Dialog title={title} onClose={onClose}>
+      <div className="size-preview" style={{ "--ar-size": `${p.arab}px`, "--latin-size": `${p.latin}px`, "--arti-size": `${p.arti}px` } as CSSProperties}>
+        {kind === "arab" && (
+          <p className="arabic" dir="rtl" lang="ar">
+            بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+          </p>
+        )}
+        {kind === "latin" && <p className="latin">Bismillahirrahmanirrahim</p>}
+        {kind === "arti" && (
+          <>
+            <p className="arti-label">Arti</p>
+            <p className="arti">Dengan nama Allah Yang Maha Pengasih, Maha Penyayang.</p>
+          </>
+        )}
+      </div>
+      <div className="size-ctrl">
+        <button type="button" className="font-btn" aria-label="Perkecil" disabled={value <= lo} onClick={() => p.set({ [kind]: value - 1 })}>
+          A−
+        </button>
+        <input type="range" min={lo} max={hi} step={1} value={value} aria-label={title} aria-valuetext={`${value} piksel`} onChange={(e) => p.set({ [kind]: Number(e.target.value) })} />
+        <button type="button" className="font-btn" aria-label="Perbesar" disabled={value >= hi} onClick={() => p.set({ [kind]: value + 1 })}>
+          A+
+        </button>
+      </div>
+      <p className="size-value">
+        <span>
+          Ukuran <output>{value}</output>
+        </span>
+        <button type="button" className="text-btn" disabled={value === TEXT_DEFAULTS[kind]} onClick={() => p.set({ [kind]: TEXT_DEFAULTS[kind] })}>
+          Ukuran awal
+        </button>
+      </p>
+    </Dialog>
+  );
+}
+
+export function ReadingSettings() {
+  const p = useTextPrefs();
+  const [open, setOpen] = useState<SizeKind | null>(null);
+  const opener = useRef<HTMLElement | null>(null);
+  const close = () => {
+    setOpen(null);
+    opener.current?.focus();
+  };
+  return (
+    <>
+      <section className="set-card">
+        <p className="set-label">Konten</p>
+        <label className="set-switch">
+          <span>
+            <strong>Latin</strong>
+            <span>Tampilkan bacaan latin (transliterasi)</span>
+          </span>
+          <input type="checkbox" role="switch" checked={p.showLatin} onChange={(e) => p.set({ showLatin: e.target.checked })} />
+        </label>
+        <label className="set-switch">
+          <span>
+            <strong>Terjemahan</strong>
+            <span>Tampilkan arti dalam bahasa Indonesia</span>
+          </span>
+          <input type="checkbox" role="switch" checked={p.showArti} onChange={(e) => p.set({ showArti: e.target.checked })} />
+        </label>
+        <p className="set-note">Perubahan langsung berlaku di halaman Wirid Salat. Per kata dan mushaf belum tersedia.</p>
+      </section>
+
+      <section className="set-card">
+        <p className="set-label">Ukuran</p>
+        <ul className="size-list">
+          {SIZES.map((s) => (
+            <li key={s.kind}>
+              <button
+                type="button"
+                className="size-row"
+                aria-haspopup="dialog"
+                onClick={(e) => {
+                  opener.current = e.currentTarget;
+                  setOpen(s.kind);
+                }}
+              >
+                <strong>{s.label}</strong>
+                {((s.kind === "latin" && !p.showLatin) || (s.kind === "arti" && !p.showArti)) && <em>disembunyikan</em>}
+                <b>{p[s.kind]}</b>
+                <Icon size={18}>
+                  <path d="m9 6 6 6-6 6" />
+                </Icon>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <p className="set-note">Ketuk salah satu untuk mengatur ukurannya dengan penggeser, lengkap dengan pratinjau.</p>
+      </section>
+      {open && <SizeDialog kind={open} onClose={close} />}
+    </>
   );
 }
 
