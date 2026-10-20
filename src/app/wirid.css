@@ -1644,7 +1644,8 @@ a.menu-item:hover {
 
 /* ---------- Kalender ---------- */
 .cal,
-.sched {
+.sched,
+.tsb {
   --cal-green: var(--sage-dark);
   --hero-accent: var(--gold-soft);
   /* firm colours on purpose: they must not blend into the site theme */
@@ -1670,7 +1671,8 @@ a.menu-item:hover {
   border-radius: 0 0 22px 22px;
 }
 [data-site-theme="malam"] .cal,
-[data-site-theme="malam"] .sched {
+[data-site-theme="malam"] .sched,
+[data-site-theme="malam"] .tsb {
   --cal-green: var(--sage);
   --hero-accent: var(--gold);
   --cal-sun: #ff7a6e;
@@ -2263,4 +2265,180 @@ a.menu-item:hover {
 }
 .sched-day li.next + li {
   border-top-color: transparent;
+}
+
+/* ---------- Tasbih counter ---------- */
+.tsb-pick {
+  display: flex;
+  gap: 6px;
+  margin: 14px 0 0;
+  padding: 2px 16px 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tsb-pick::-webkit-scrollbar {
+  display: none;
+}
+.tsb-pick button,
+.tsb-target button,
+.tsb-actions button {
+  min-height: 38px;
+  padding: 6px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.tsb-pick button {
+  flex: none;
+}
+.tsb-pick button[aria-pressed="true"],
+.tsb-target button[aria-pressed="true"] {
+  border-color: var(--cal-puasa);
+  background: var(--cal-sel-bg);
+  box-shadow: 0 0 0 1px var(--cal-puasa);
+}
+.tsb-word {
+  margin: 4px 16px 0;
+  text-align: center;
+}
+.tsb-word p {
+  margin: 0;
+}
+.tsb-ar {
+  font-family: var(--font-amiri), serif;
+  font-size: 2.1rem;
+  line-height: 1.7;
+  color: var(--ink);
+}
+.tsb-latin {
+  font-family: var(--font-fraunces), serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+.tsb-arti {
+  font-size: 0.84rem;
+  color: var(--text-soft);
+}
+.tsb-pad {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: min(72vw, 300px);
+  aspect-ratio: 1;
+  margin: 14px auto 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.08s;
+}
+.tsb-pad:active {
+  transform: scale(0.97);
+}
+.tsb-pad svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.tsb-track {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 7;
+}
+.tsb-bar {
+  fill: none;
+  stroke: var(--cal-puasa);
+  stroke-width: 7;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.15s;
+}
+.tsb-pad.done {
+  background: var(--cal-now-bg);
+}
+.tsb-pad.done .tsb-bar {
+  stroke: var(--cal-now);
+}
+.tsb-count {
+  position: relative;
+  font-size: clamp(3.6rem, 22vw, 5.4rem);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.tsb-of {
+  position: relative;
+  margin-top: 4px;
+  font-size: 0.86rem;
+  color: var(--text-soft);
+}
+.tsb-status,
+.tsb-rounds {
+  margin: 12px 16px 0;
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+.tsb-rounds {
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: var(--text-soft);
+}
+.tsb-target {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 14px 16px 0;
+}
+.tsb-target span {
+  margin-right: 4px;
+  font-size: 0.8rem;
+  color: var(--text-soft);
+}
+.tsb-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 16px 0;
+}
+.tsb-actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.tsb-actions button[aria-pressed="true"] {
+  border-color: var(--cal-puasa);
+  color: var(--cal-puasa);
+}
+.tsb-confirm {
+  display: inline-flex;
+  gap: 6px;
+}
+.tsb-actions .danger {
+  border-color: var(--cal-sun);
+  color: var(--cal-sun);
+}
+.tsb-note {
+  margin: 12px 16px 0;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--text-soft);
 }

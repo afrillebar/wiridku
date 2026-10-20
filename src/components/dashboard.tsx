@@ -77,7 +77,7 @@ const ICONS = {
 // Only features that exist are links; the others are planned stages and say so instead of linking to an empty page.
 const MENU = [
   { name: "Wirid Salat", icon: ICONS.book, href: "/wirid-salat" },
-  { name: "Tasbih", icon: ICONS.beads },
+  { name: "Tasbih", icon: ICONS.beads, href: "/tasbih" },
   { name: "Doa Harian", icon: ICONS.hands },
   { name: "Arah Kiblat", icon: ICONS.compass },
   { name: "Kalender", icon: ICONS.calendar, href: "/kalender" },
