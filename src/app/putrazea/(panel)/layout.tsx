@@ -24,6 +24,7 @@ async function Header() {
     { href: "/putrazea/phases", label: "Fase" },
     { href: "/putrazea/recitations", label: "Bacaan" },
     { href: "/putrazea/doa", label: "Doa Harian" },
+    { href: "/putrazea/latar", label: "Latar Al-Qur'an" },
     { href: "/putrazea/preview", label: "Pratinjau" },
     ...(staff.role === "admin"
       ? [

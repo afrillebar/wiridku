@@ -1125,3 +1125,41 @@ body[data-admin-theme="malam"] .admin .msg.error {
 body[data-admin-theme="malam"] .admin label.source-option:has(input:checked) {
   background: rgba(143, 179, 160, 0.18);
 }
+
+/* ---------- Latar Al-Qur'an ---------- */
+.admin .bg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.admin .bg-grid li {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+}
+.admin .bg-grid img,
+.admin .bg-preview img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  background: var(--paper-alt);
+}
+.admin .bg-grid li.off img {
+  opacity: 0.45;
+}
+.admin .bg-grid li > div {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px 12px;
+}
+.admin .bg-preview {
+  max-width: 320px;
+}
+.admin .bg-preview img {
+  border-radius: 10px;
+}

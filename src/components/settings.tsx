@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { LocationPicker, cityKey, clearPrayerData, placeName, pretty, useCity, useSavedMonths } from "./prayer-card";
 import { saveAutoplay, useAutoplay } from "./audio";
-import { TEXT_DEFAULTS, TEXT_LIMITS, clearPlace, clearProgress, useProgressSummary, useTextPrefs } from "@/lib/progress";
+import { TEXT_DEFAULTS, TEXT_LIMITS, clearPlace, clearProgress, clearQuranPlace, useProgressSummary, useQuranPlace, useTextPrefs } from "@/lib/progress";
 import { zoneByOffset, zoneOf } from "@/lib/prayer";
 import { SITE_THEMES, VISITOR_THEME_KEY, type SiteThemeId } from "@/lib/site-theme";
 
@@ -50,6 +50,7 @@ const MENU = [
 // ---------- what the two dialogs say ----------
 export const SOURCES = [
   ["Ayat Al-Qur'an", "Dicocokkan dengan mushaf Tanzil (api.alquran.cloud)."],
+  ["Mushaf dan murotal", "Teks Utsmani, terjemah Kementerian Agama RI, murotal, dan waktu tiap ayat dari Quran.com. Bacaan latin dari equran.id."],
   ["Hadis", "Dicocokkan dengan kitab hadis yang dirujuk di tiap bacaan."],
   ["Jadwal salat", "Kementerian Agama RI (Bimas Islam), lewat api.myquran.com."],
   ["Lokasi GPS", "Waktu salat dihitung di perangkat Anda dengan kriteria Kemenag. Nama daerahnya dicari lewat BigDataCloud dan OpenStreetMap."],
@@ -502,6 +503,7 @@ function ClearButton({ label, onClear, disabled }: { label: string; onClear: () 
 
 export function DataSettings() {
   const { done, streak, place } = useProgressSummary();
+  const quranPlace = useQuranPlace();
   const { city, chosen } = useCity();
   const months = useSavedMonths();
   const { info, refresh } = useOfflineAudio();
@@ -529,6 +531,13 @@ export function DataSettings() {
             <span>{place ? "Tersimpan" : "Belum ada"}</span>
           </span>
           <ClearButton label="Hapus" disabled={!place} onClear={clearPlace} />
+        </li>
+        <li>
+          <span>
+            <strong>Posisi murotal Al-Qur&apos;an</strong>
+            <span>{quranPlace ? `Surah ke-${quranPlace.surah}, ayat ${quranPlace.ayah}` : "Belum ada"}</span>
+          </span>
+          <ClearButton label="Hapus" disabled={!quranPlace} onClear={clearQuranPlace} />
         </li>
         <li>
           <span>

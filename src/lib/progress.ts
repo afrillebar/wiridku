@@ -129,6 +129,80 @@ export function writePlace(slug: string) {
   write(PLACE_KEY, slug, false);
 }
 
+// Al-Qur'an: the chosen reciter, whether the page follows the recitation, and the last place listened to.
+// t is the second inside the surah's audio file for that reciter; ayah is the verse playing at t.
+// Listening view: bg is a background id, "none" for the plain gradient, or null for the first one the admin added;
+// ambient is a background sound id (checked by the player) or null; ambientVol runs 0..1.
+// lsnArab/lsnLatin/lsnArti choose the text in the listening view, apart from the reading page's own choice.
+export type QuranPlace = { surah: number; qari: number; t: number; ayah: number };
+export type QuranPrefs = {
+  qari: number;
+  follow: boolean;
+  bg: string | null;
+  ambient: string | null;
+  ambientVol: number;
+  autoNext: boolean;
+  lsnArab: boolean;
+  lsnLatin: boolean;
+  lsnArti: boolean;
+};
+const QURAN_PREFS_DEFAULT = { follow: true, bg: null, ambient: null, ambientVol: 0.5, autoNext: true, lsnArab: true, lsnLatin: false, lsnArti: true };
+const QURAN_PREFS_KEY = "wirid_quran_prefs_v1";
+const QURAN_PLACE_KEY = "wirid_quran_place_v1";
+const posInt = (n: unknown) => (typeof n === "number" && Number.isInteger(n) && n > 0 ? n : null);
+const shortText = (v: unknown) => (typeof v === "string" && v && v.length <= 64 ? v : null);
+
+const readQuranPrefs = (defaultQari: number): QuranPrefs => {
+  const s = (read(QURAN_PREFS_KEY) ?? {}) as Partial<QuranPrefs>;
+  return {
+    qari: posInt(s.qari) ?? defaultQari,
+    follow: s.follow !== false,
+    bg: shortText(s.bg),
+    ambient: shortText(s.ambient),
+    ambientVol: typeof s.ambientVol === "number" && s.ambientVol >= 0 && s.ambientVol <= 1 ? s.ambientVol : 0.5,
+    autoNext: s.autoNext !== false,
+    lsnArab: s.lsnArab !== false,
+    lsnLatin: s.lsnLatin === true,
+    lsnArti: s.lsnArti !== false,
+  };
+};
+
+export function useQuranPrefs(defaultQari: number) {
+  const raw = useSyncExternalStore(
+    subscribe,
+    () => JSON.stringify(readQuranPrefs(defaultQari)),
+    () => JSON.stringify({ qari: defaultQari, ...QURAN_PREFS_DEFAULT } satisfies QuranPrefs),
+  );
+  const prefs = useMemo(() => JSON.parse(raw) as QuranPrefs, [raw]);
+  const set = useCallback((patch: Partial<QuranPrefs>) => write(QURAN_PREFS_KEY, { ...readQuranPrefs(defaultQari), ...patch }), [defaultQari]);
+  return { ...prefs, set };
+}
+
+export function readQuranPlace(): QuranPlace | null {
+  const p = read(QURAN_PLACE_KEY) as Partial<QuranPlace> | null;
+  const surah = posInt(p?.surah);
+  const qari = posInt(p?.qari);
+  if (!surah || !qari) return null;
+  return { surah, qari, t: typeof p?.t === "number" && p.t > 0 ? p.t : 0, ayah: posInt(p?.ayah) ?? 1 };
+}
+
+export function useQuranPlace() {
+  const raw = useSyncExternalStore(subscribe, () => JSON.stringify(readQuranPlace()), () => "null");
+  return useMemo(() => JSON.parse(raw) as QuranPlace | null, [raw]);
+}
+
+// saved every few seconds while playing, so other components are not re-rendered for it
+export function writeQuranPlace(place: QuranPlace) {
+  write(QURAN_PLACE_KEY, place, false);
+}
+
+export function clearQuranPlace() {
+  try {
+    localStorage.removeItem(QURAN_PLACE_KEY);
+  } catch {}
+  window.dispatchEvent(new Event(EVENT));
+}
+
 // Pengaturan > Penyimpanan Data: what is stored, and wiping it.
 export function useProgressSummary() {
   const raw = useSyncExternalStore(

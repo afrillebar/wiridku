@@ -5,7 +5,7 @@ import type { Staff } from "@/lib/auth";
 export async function audit(
   supabase: SupabaseClient,
   actor: Staff,
-  entityType: "phase" | "recitation" | "prayer" | "user" | "audio" | "settings" | "visit",
+  entityType: "phase" | "recitation" | "prayer" | "background" | "user" | "audio" | "settings" | "visit",
   entityId: string | null,
   action: string,
   summary: Record<string, unknown> = {},

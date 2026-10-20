@@ -156,6 +156,21 @@ export async function getAudioSource(): Promise<AudioSource> {
   return data ? parseAudioSource(data.value) : DEFAULT_AUDIO_SOURCE;
 }
 
+export type ListenBackground = { id: string; title: string; url: string; credit: string | null };
+
+// Active backgrounds for the Al-Qur'an listening view, oldest first; the anon key and RLS decide what is public.
+// They are decoration, so a failed read shows the plain gradient instead of breaking the surah page.
+export async function getListenBackgrounds(): Promise<ListenBackground[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("content");
+
+  const db = createAnonClient();
+  const { data, error } = await db.from("listen_backgrounds").select("id, title, storage_path, credit").order("created_at");
+  if (error) return [];
+  return data.map((b) => ({ id: b.id, title: b.title, credit: b.credit, url: db.storage.from("backgrounds").getPublicUrl(b.storage_path).data.publicUrl }));
+}
+
 // Published doa, in the order of the groups; the anon key and RLS decide what is public
 export async function getPublishedPrayers(): Promise<Prayer[]> {
   "use cache";

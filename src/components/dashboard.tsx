@@ -23,6 +23,14 @@ const ICONS = {
       <path d="M21 5.5c-2.5-1-5.5-1-8 .5v13c2.5-1.5 5.5-1.5 8-.5z" />
     </>
   ),
+  // open mushaf resting on a folding stand (rehal)
+  quran: (
+    <>
+      <path d="M3 6.5c3-1.2 6-.8 9 1 3-1.8 6-2.2 9-1v7c-3-1.2-6-.8-9 1-3-1.8-6-2.2-9-1z" />
+      <path d="M12 7.5v7" />
+      <path d="m5 20.5 14-5M19 20.5l-14-5" />
+    </>
+  ),
   // a loop of prayer beads (dotted ring) with the end bead hanging below
   beads: (
     <>
@@ -77,6 +85,7 @@ const ICONS = {
 // Only features that exist are links; the others are planned stages and say so instead of linking to an empty page.
 const MENU = [
   { name: "Wirid Salat", icon: ICONS.book, href: "/wirid-salat" },
+  { name: "Al-Qur'an", icon: ICONS.quran, href: "/alquran" },
   { name: "Tasbih", icon: ICONS.beads, href: "/tasbih" },
   { name: "Doa Harian", icon: ICONS.hands, href: "/doa-harian" },
   { name: "Arah Kiblat", icon: ICONS.compass, href: "/arah-kiblat" },
