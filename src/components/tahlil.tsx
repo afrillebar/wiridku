@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import type { Prayer } from "@/lib/doa";
-import { useTahlilState, useTextPrefs } from "@/lib/progress";
+import { useShalawatState, useTahlilState, useTextPrefs } from "@/lib/progress";
 import type { TahlilPart } from "@/lib/tahlil";
 import { ClipPlayerView, useClipPlayer } from "./clip-player";
 import { DoaCard } from "./doa";
@@ -30,14 +30,30 @@ const asPrayer = (p: TahlilPart): Prayer => ({
   repeat_label: null,
 });
 
-export function Tahlil({ parts }: { parts: TahlilPart[] }) {
+type ListProps = {
+  parts: TahlilPart[];
+  // which saved position and which saved "next" setting the page uses
+  store: "tahlil" | "shalawat";
+  heading: string;
+  subtitle: string;
+  intro: string;
+  footer: ReactNode;
+  label: string;
+  // the line on the "play from the start" card
+  start: string;
+};
+
+// Tahlil and Shalawat are the same kind of page: cards read in order, each with its own sound, one player at the bottom
+export function ReadingList({ parts, store, heading, subtitle, intro, footer, label, start }: ListProps) {
   const prefs = useTextPrefs();
-  const state = useTahlilState();
+  const tahlil = useTahlilState();
+  const shalawat = useShalawatState();
+  const state = store === "tahlil" ? tahlil : shalawat;
   const setState = state.set;
   const [open, setOpen] = useState<Set<string>>(new Set());
   const audio = Object.fromEntries(parts.filter((p) => p.clips.length).map((p) => [p.slug, p.clips]));
   const queue = parts.filter((p) => audio[p.slug]);
-  const titleOf = useCallback((slug: string) => parts.find((p) => p.slug === slug)?.title ?? "Tahlil", [parts]);
+  const titleOf = useCallback((slug: string) => parts.find((p) => p.slug === slug)?.title ?? heading, [parts, heading]);
 
   // a link such as /tahlil#ayat-kursi opens that card
   useEffect(() => {
@@ -55,7 +71,7 @@ export function Tahlil({ parts }: { parts: TahlilPart[] }) {
     queue,
     autoNext: state.autoNext,
     titleOf,
-    artist: "Tahlil & Yasin",
+    artist: heading,
     onStart: (slug) => {
       setState({ slug });
       setOpen((o) => (o.has(slug) ? o : new Set(o).add(slug)));
@@ -81,16 +97,14 @@ export function Tahlil({ parts }: { parts: TahlilPart[] }) {
           </Icon>
         </Link>
         <div>
-          <h1>Tahlil &amp; Yasin</h1>
+          <h1>{heading}</h1>
           <p>
-            <span>{parts.length} bacaan, urut dari Yasin sampai doa</span>
+            <span>{subtitle}</span>
           </p>
         </div>
       </header>
 
-      <p className="tahlil-intro">
-        Susunan umum yang dipakai di banyak tempat di Indonesia. Urutan dan tambahan bacaan (mis. bacaan pembuka dan tawasul) bisa berbeda antar daerah, jadi ikuti pemimpin tahlil di majelis Anda.
-      </p>
+      <p className="tahlil-intro">{intro}</p>
 
       {last ? (
         <button type="button" className="qrn-resume doa-resume" onClick={() => player.play(last.slug)}>
@@ -105,7 +119,7 @@ export function Tahlil({ parts }: { parts: TahlilPart[] }) {
           <button type="button" className="qrn-resume doa-resume" onClick={() => player.play(queue[0].slug)}>
             <span>
               <small>Dengarkan</small>
-              <strong>Dari awal, urut sampai doa</strong>
+              <strong>{start}</strong>
             </span>
             <span className="qrn-resume-go">Putar</span>
           </button>
@@ -133,9 +147,7 @@ export function Tahlil({ parts }: { parts: TahlilPart[] }) {
         ))}
       </section>
 
-      <p className="doa-note-foot">
-        Ukuran huruf, latin, dan terjemahan bisa diatur di <Link href="/pengaturan/bacaan">Pengaturan, Tampilan Bacaan</Link>. Ayat Al-Qur&apos;an, terjemah Kementerian Agama RI, dan murotal Mishary Alafasy dari Quran.com; dzikir dan doa dari Hisnul Muslim (hisnmuslim.com). Audio diputar langsung dari sumbernya, butuh internet.
-      </p>
+      <p className="doa-note-foot">{footer}</p>
 
       <ClipPlayerView
         wire={player.wire}
@@ -148,8 +160,46 @@ export function Tahlil({ parts }: { parts: TahlilPart[] }) {
         title={titleOf(cur?.slug ?? "")}
         autoNext={state.autoNext}
         onAutoNext={(on) => setState({ autoNext: on })}
-        label="Pemutar tahlil"
+        label={label}
       />
     </div>
+  );
+}
+
+export function Tahlil({ parts }: { parts: TahlilPart[] }) {
+  return (
+    <ReadingList
+      parts={parts}
+      store="tahlil"
+      heading="Tahlil & Yasin"
+      subtitle={`${parts.length} bacaan, urut dari Yasin sampai doa`}
+      intro="Susunan umum yang dipakai di banyak tempat di Indonesia. Urutan dan tambahan bacaan (mis. bacaan pembuka dan tawasul) bisa berbeda antar daerah, jadi ikuti pemimpin tahlil di majelis Anda."
+      footer={
+        <>
+          Ukuran huruf, latin, dan terjemahan bisa diatur di <Link href="/pengaturan/bacaan">Pengaturan, Tampilan Bacaan</Link>. Ayat Al-Qur&apos;an, terjemah Kementerian Agama RI, dan murotal Mishary Alafasy dari Quran.com; dzikir dan doa dari Hisnul Muslim (hisnmuslim.com). Audio diputar langsung dari sumbernya, butuh internet.
+        </>
+      }
+      label="Pemutar tahlil"
+      start="Dari awal, urut sampai doa"
+    />
+  );
+}
+
+export function Shalawat({ parts }: { parts: TahlilPart[] }) {
+  return (
+    <ReadingList
+      parts={parts}
+      store="shalawat"
+      heading="Shalawat"
+      subtitle={`${parts.length} shalawat dengan audio`}
+      intro="Shalawat Ibrahimiyah berasal dari hadis. Lafaz lainnya disusun para ulama, bukan lafaz dari Nabi ﷺ, dan sebagian punya beberapa versi naskah. Yang tertulis di sini sama dengan yang dibacakan di audionya."
+      footer={
+        <>
+          Ukuran huruf, latin, dan terjemahan bisa diatur di <Link href="/pengaturan/bacaan">Pengaturan, Tampilan Bacaan</Link>. Teks Arab dirujuk ke Quran NU Online (quran.nu.or.id) dan Hisnul Muslim; latin dan arti ditulis sendiri. Audio diputar langsung dari Hisnul Muslim dan dari Internet Archive (archive.org), yang pembacanya tidak disebut; butuh internet.
+        </>
+      }
+      label="Pemutar shalawat"
+      start="Dari awal, urut dari yang pertama"
+    />
   );
 }

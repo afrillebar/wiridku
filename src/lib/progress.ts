@@ -207,6 +207,7 @@ export function clearQuranPlace() {
 type ListenState = { slug: string | null; autoNext: boolean };
 const DOA_KEY = "wirid_doa_v1";
 const TAHLIL_KEY = "wirid_tahlil_v1";
+const SHALAWAT_KEY = "wirid_shalawat_v1";
 const readListen = (key: string): ListenState => {
   const s = (read(key) ?? {}) as Partial<ListenState>;
   return { slug: shortText(s.slug), autoNext: s.autoNext !== false };
@@ -221,8 +222,10 @@ function useListenState(key: string) {
 
 export const useDoaState = () => useListenState(DOA_KEY);
 export const useTahlilState = () => useListenState(TAHLIL_KEY);
+export const useShalawatState = () => useListenState(SHALAWAT_KEY);
 export const clearDoaPlace = () => write(DOA_KEY, { ...readListen(DOA_KEY), slug: null });
 export const clearTahlilPlace = () => write(TAHLIL_KEY, { ...readListen(TAHLIL_KEY), slug: null });
+export const clearShalawatPlace = () => write(SHALAWAT_KEY, { ...readListen(SHALAWAT_KEY), slug: null });
 
 // Pengaturan > Penyimpanan Data: what is stored, and wiping it.
 export function useProgressSummary() {

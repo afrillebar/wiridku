@@ -48,6 +48,8 @@ const ICONS = {
       <path d="M19.5 8.5c.7-.7 1.5-1.6 1.5-2.7A2.73 2.73 0 0 0 16 4a2.78 2.78 0 0 0-5 1.8c0 1.2.8 2 1.5 2.8L16 12Z" />
     </>
   ),
+  // a heart (Lucide "heart"): shalawat, love for the Prophet
+  heart: <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />,
   // a scroll with lines of text (Lucide "scroll-text"): the tahlil
   scroll: (
     <>
@@ -97,6 +99,7 @@ const MENU = [
   { name: "Tasbih", icon: ICONS.beads, href: "/tasbih" },
   { name: "Doa Harian", icon: ICONS.hands, href: "/doa-harian" },
   { name: "Tahlil & Yasin", icon: ICONS.scroll, href: "/tahlil" },
+  { name: "Shalawat", icon: ICONS.heart, href: "/shalawat" },
   { name: "Arah Kiblat", icon: ICONS.compass, href: "/arah-kiblat" },
   { name: "Kalender", icon: ICONS.calendar, href: "/kalender" },
   { name: "Jadwal Salat", icon: ICONS.mosque, href: "/jadwal-salat" },

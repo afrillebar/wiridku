@@ -36,6 +36,8 @@ export function useClipPlayer(o: Options) {
   // armed: the playhead has reached the clip; done: the last clip ran out, so Putar starts the reading again
   const armed = useRef(false);
   const done = useRef(false);
+  // a failed load is tried again twice before the bar says it failed: the sources (archive.org especially) answer 500 now and then
+  const retries = useRef(0);
   const clock = useAudioClock(audioRef, playing, "total", clipRef);
   const opts = useRef(o);
   const finishRef = useRef<() => void>(() => {});
@@ -50,6 +52,7 @@ export function useClipPlayer(o: Options) {
     curRef.current = { slug, part };
     armed.current = false;
     done.current = false;
+    retries.current = 0;
     setCur({ slug, part });
     setFailed(false);
     if (part === 0) opts.current.onStart?.(slug);
@@ -76,6 +79,25 @@ export function useClipPlayer(o: Options) {
     const i = queue.findIndex((x) => x.slug === c.slug);
     const next = autoNext && i >= 0 ? queue[i + 1] : undefined;
     if (next) play(next.slug);
+  };
+
+  const loadFailed = () => {
+    const a = audioRef.current;
+    const c = curRef.current;
+    if (a && c && retries.current < 2) {
+      retries.current++;
+      setTimeout(() => {
+        if (curRef.current !== c) return;
+        a.load();
+        try {
+          a.currentTime = clipRef.current?.from ?? 0;
+        } catch {}
+        a.play().catch(() => {});
+      }, 1500 * retries.current);
+      return;
+    }
+    setFailed(true);
+    setPlaying(false);
   };
 
   // the file ended: that counts as reaching the end of the clip even if the watch never saw the playhead arrive
@@ -149,7 +171,7 @@ export function useClipPlayer(o: Options) {
     ms.setActionHandler("nexttrack", () => stepRef.current(1));
   }, [slug, titleOf, artist]);
 
-  return { cur, playing, failed, play, toggle, step, wire: { audioRef, clipRef, clock, setPlaying, setFailed, watch, ended } };
+  return { cur, playing, failed, play, toggle, step, wire: { audioRef, clipRef, clock, setPlaying, watch, ended, loadFailed } };
 }
 
 export type ClipPlayer = ReturnType<typeof useClipPlayer>;
@@ -157,7 +179,7 @@ export type ClipPlayer = ReturnType<typeof useClipPlayer>;
 // The sound itself plus, once something has been started, the bar at the bottom of the screen.
 type ViewProps = { wire: ClipPlayer["wire"]; cur: ClipPlayer["cur"]; playing: boolean; failed: boolean; step: ClipPlayer["step"]; toggle: ClipPlayer["toggle"]; queue: { slug: string }[]; title: string; autoNext: boolean; onAutoNext: (on: boolean) => void; label: string };
 
-export function ClipPlayerView({ wire: { audioRef, clipRef, clock, setPlaying, setFailed, watch, ended }, cur, playing, failed, step, toggle, queue, title, autoNext, onAutoNext, label }: ViewProps) {
+export function ClipPlayerView({ wire: { audioRef, clipRef, clock, setPlaying, watch, ended, loadFailed }, cur, playing, failed, step, toggle, queue, title, autoNext, onAutoNext, label }: ViewProps) {
   const { rangeRef, nowRef, lastRef, drag } = clock;
   const index = queue.findIndex((x) => x.slug === cur?.slug);
   return (
@@ -225,10 +247,7 @@ export function ClipPlayerView({ wire: { audioRef, clipRef, clock, setPlaying, s
           // a clip deep in a file: the start position set before loading is not honoured everywhere
           if (a && c && Math.abs(a.currentTime - c.from) > 0.5) a.currentTime = c.from;
         }}
-        onError={() => {
-          setFailed(true);
-          setPlaying(false);
-        }}
+        onError={loadFailed}
       />
     </>
   );
