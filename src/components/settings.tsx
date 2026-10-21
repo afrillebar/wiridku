@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, 
 import { LocationPicker, cityKey, clearPrayerData, placeName, pretty, useCity, useSavedMonths } from "./prayer-card";
 import { saveAutoplay, useAutoplay } from "./audio";
 import { installApp, useInstalled, useInstallOffer } from "./install-prompt";
-import { TEXT_DEFAULTS, TEXT_LIMITS, clearDoaPlace, clearPlace, clearProgress, clearQuranPlace, useDoaState, useProgressSummary, useQuranPlace, useTextPrefs } from "@/lib/progress";
+import { TEXT_DEFAULTS, TEXT_LIMITS, clearDoaPlace, clearPlace, clearProgress, clearQuranPlace, clearTahlilPlace, useDoaState, useProgressSummary, useQuranPlace, useTahlilState, useTextPrefs } from "@/lib/progress";
 import { zoneByOffset, zoneOf } from "@/lib/prayer";
 import { SITE_THEMES, VISITOR_THEME_KEY, type SiteThemeId } from "@/lib/site-theme";
 
@@ -59,6 +59,7 @@ export const SOURCES = [
   ["Kalender", "Tanggal Hijriah mengikuti kalender Umm al-Qura, jadi bisa berbeda satu hari dari penetapan pemerintah. Pasaran Jawa dihitung dari tanggal."],
   ["Arah Kiblat", "Dihitung dari koordinat Anda ke Ka'bah, tanpa layanan luar."],
   ["Audio", "Rekaman dari sumber terbuka. Bacaan yang memakai suara sintetis diberi tanda."],
+  ["Tahlil & Yasin", "Ayat Al-Qur'an, terjemah Kementerian Agama RI, dan murotal Mishary Alafasy dari Quran.com; dzikir dan doa dari Hisnul Muslim (hisnmuslim.com), yang tidak menyebut nama pembacanya. Audio diputar langsung dari sumbernya dan butuh internet. Urutan bacaan mengikuti susunan umum di Indonesia dan bisa berbeda antar daerah."],
   ["Audio Doa Harian", "Diputar langsung dari Hisnul Muslim (hisnmuslim.com), yang tidak menyebut nama pembacanya, dan untuk doa dari Al-Qur'an dari bacaan Mishary Alafasy di Quran.com. Tidak diunduh ke Wiridku, jadi butuh internet."],
 ] as const;
 
@@ -538,6 +539,7 @@ export function DataSettings() {
   const { done, streak, place } = useProgressSummary();
   const quranPlace = useQuranPlace();
   const doaPlace = useDoaState().slug;
+  const tahlilPlace = useTahlilState().slug;
   const { city, chosen } = useCity();
   const months = useSavedMonths();
   const { info, refresh } = useOfflineAudio();
@@ -579,6 +581,13 @@ export function DataSettings() {
             <span>{doaPlace ? "Tersimpan" : "Belum ada"}</span>
           </span>
           <ClearButton label="Hapus" disabled={!doaPlace} onClear={clearDoaPlace} />
+        </li>
+        <li>
+          <span>
+            <strong>Tahlil terakhir didengar</strong>
+            <span>{tahlilPlace ? "Tersimpan" : "Belum ada"}</span>
+          </span>
+          <ClearButton label="Hapus" disabled={!tahlilPlace} onClear={clearTahlilPlace} />
         </li>
         <li>
           <span>

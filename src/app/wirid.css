@@ -4239,3 +4239,19 @@ button.doa-resume {
   background: var(--sage-dark);
   color: var(--on-sage);
 }
+.tahlil-intro {
+  margin: 0 16px 12px;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+.doa-n {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: var(--cal-sel-bg);
+  color: var(--text-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+}

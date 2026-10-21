@@ -203,24 +203,26 @@ export function clearQuranPlace() {
   window.dispatchEvent(new Event(EVENT));
 }
 
-// Doa Harian: the doa heard last (slug) and whether the next one follows by itself.
-type DoaState = { slug: string | null; autoNext: boolean };
+// Doa Harian and Tahlil: the reading heard last (slug) and whether the next one follows by itself.
+type ListenState = { slug: string | null; autoNext: boolean };
 const DOA_KEY = "wirid_doa_v1";
-const readDoa = (): DoaState => {
-  const s = (read(DOA_KEY) ?? {}) as Partial<DoaState>;
+const TAHLIL_KEY = "wirid_tahlil_v1";
+const readListen = (key: string): ListenState => {
+  const s = (read(key) ?? {}) as Partial<ListenState>;
   return { slug: shortText(s.slug), autoNext: s.autoNext !== false };
 };
 
-export function useDoaState() {
-  const raw = useSyncExternalStore(subscribe, () => JSON.stringify(readDoa()), () => JSON.stringify({ slug: null, autoNext: true } satisfies DoaState));
-  const state = useMemo(() => JSON.parse(raw) as DoaState, [raw]);
-  const set = useCallback((patch: Partial<DoaState>) => write(DOA_KEY, { ...readDoa(), ...patch }), []);
+function useListenState(key: string) {
+  const raw = useSyncExternalStore(subscribe, () => JSON.stringify(readListen(key)), () => JSON.stringify({ slug: null, autoNext: true } satisfies ListenState));
+  const state = useMemo(() => JSON.parse(raw) as ListenState, [raw]);
+  const set = useCallback((patch: Partial<ListenState>) => write(key, { ...readListen(key), ...patch }), [key]);
   return { ...state, set };
 }
 
-export function clearDoaPlace() {
-  write(DOA_KEY, { ...readDoa(), slug: null });
-}
+export const useDoaState = () => useListenState(DOA_KEY);
+export const useTahlilState = () => useListenState(TAHLIL_KEY);
+export const clearDoaPlace = () => write(DOA_KEY, { ...readListen(DOA_KEY), slug: null });
+export const clearTahlilPlace = () => write(TAHLIL_KEY, { ...readListen(TAHLIL_KEY), slug: null });
 
 // Pengaturan > Penyimpanan Data: what is stored, and wiping it.
 export function useProgressSummary() {

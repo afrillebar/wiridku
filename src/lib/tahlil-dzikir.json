@@ -1,0 +1,128 @@
+[
+ {
+  "slug": "istighfar",
+  "title": "Istighfar",
+  "note": "Dibaca tiga kali atau lebih.",
+  "ref": "HR. Abu Dawud dan Tirmidzi",
+  "blocks": [
+   {
+    "ar": "أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ الَّذِي لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ وَأَتُوبُ إِلَيْهِ",
+    "la": "Astaghfirullāhal-'aẓīmal-ladzī lā ilāha illā huwal-ḥayyul-qayyūmu wa atūbu ilaih.",
+    "ti": "Aku memohon ampun kepada Allah Yang Maha Agung, yang tiada tuhan selain Dia, Yang Maha Hidup lagi terus mengurus makhluk-Nya, dan aku bertobat kepada-Nya."
+   }
+  ],
+  "clips": [
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/250.mp3",
+    "from": 4.7,
+    "to": 11.5
+   }
+  ]
+ },
+ {
+  "slug": "tahlil",
+  "title": "Tahlil",
+  "note": "Kalimat tahlil dibaca berulang. Jumlah ulangannya mengikuti kebiasaan pemimpin tahlil; hadisnya menyebut sepuluh kali.",
+  "ref": "HR. Bukhari dan Muslim",
+  "blocks": [
+   {
+    "ar": "لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ، وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
+    "la": "Lā ilāha illallāhu waḥdahū lā syarīka lah, lahul-mulku wa lahul-ḥamdu wa huwa 'alā kulli syai'in qadīr.",
+    "ti": "Tiada tuhan selain Allah semata, tiada sekutu bagi-Nya. Milik-Nya kerajaan dan milik-Nya segala puji, dan Dia Mahakuasa atas segala sesuatu."
+   }
+  ],
+  "clips": [
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/255.mp3",
+    "from": 5.58,
+    "to": 14.04
+   }
+  ]
+ },
+ {
+  "slug": "tasbih",
+  "title": "Tasbih",
+  "note": "Dua kalimat ringan di lisan, berat di timbangan, dan dicintai Allah.",
+  "ref": "HR. Bukhari dan Muslim",
+  "blocks": [
+   {
+    "ar": "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ",
+    "la": "Subḥānallāhi wa biḥamdih, subḥānallāhil-'aẓīm.",
+    "ti": "Mahasuci Allah dan dengan memuji-Nya aku bertasbih; Mahasuci Allah Yang Maha Agung."
+   }
+  ],
+  "clips": [
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/256.mp3",
+    "from": 12.64
+   }
+  ]
+ },
+ {
+  "slug": "shalawat",
+  "title": "Salawat kepada Nabi",
+  "note": "Salawat Ibrahimiyah.",
+  "ref": "HR. Bukhari dan Muslim",
+  "blocks": [
+   {
+    "ar": "اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ، وَعَلَى آلِ مُحَمَّدٍ، كَمَا صَلَّيتَ عَلَى إِبْرَاهِيمَ، وَعَلَى آلِ إِبْرَاهِيمَ، إِنَّكَ حَمِيدٌ مَجِيدٌ",
+    "la": "Allāhumma ṣalli 'alā Muḥammad wa 'alā āli Muḥammad, kamā ṣallaita 'alā Ibrāhīm wa 'alā āli Ibrāhīm, innaka ḥamīdum majīd.",
+    "ti": "Ya Allah, limpahkanlah salawat kepada Nabi Muhammad dan keluarga Nabi Muhammad, sebagaimana Engkau melimpahkan salawat kepada Nabi Ibrahim dan keluarga Nabi Ibrahim; sesungguhnya Engkau Maha Terpuji lagi Maha Mulia."
+   },
+   {
+    "ar": "اللَّهُمَّ بَارِكْ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ، كَمَا بَارَكْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ، إِنَّكَ حَمِيدٌ مَجِيدٌ",
+    "la": "Allāhumma bārik 'alā Muḥammad wa 'alā āli Muḥammad, kamā bārakta 'alā Ibrāhīm wa 'alā āli Ibrāhīm, innaka ḥamīdum majīd.",
+    "ti": "Ya Allah, limpahkanlah berkah kepada Nabi Muhammad dan keluarga Nabi Muhammad, sebagaimana Engkau melimpahkan berkah kepada Nabi Ibrahim dan keluarga Nabi Ibrahim; sesungguhnya Engkau Maha Terpuji lagi Maha Mulia."
+   }
+  ],
+  "clips": [
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/53.mp3",
+    "from": 9.08,
+    "to": 22
+   },
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/53.mp3",
+    "from": 23.64
+   }
+  ]
+ },
+ {
+  "slug": "doa-almarhum",
+  "title": "Doa untuk Almarhum",
+  "note": "Doa untuk jenazah laki-laki. Untuk perempuan, kata ganti disesuaikan (lahā); untuk banyak orang (lahum).",
+  "ref": "HR. Muslim",
+  "blocks": [
+   {
+    "ar": "اللَّهُمَّ اغْفِرْ لَهُ وَارْحَمْهُ، وَعَافِهِ، وَاعْفُ عَنْهُ، وَأَكْرِمْ نُزُلَهُ، وَوَسِّعْ مُدْخَلَهُ، وَاغْسِلْهُ بِالْمَاءِ وَالثَّلْجِ وَالْبَرَدِ، وَنَقِّهِ مِنَ الْخَطَايَا كَمَا نَقَّيْتَ الثَّوْبَ الأَبْيَضَ مِنَ الدَّنَسِ، وَأَبْدِلْهُ دَارًا خَيْرًا مِنْ دَارِهِ، وَأَهْلًا خَيْرًا مِنْ أَهْلِهِ، وَزَوْجًا خَيْرًا مِنْ زَوْجِهِ، وَأَدْخِلْهُ الْجَنَّةَ، وَأَعِذْهُ مِنْ عَذَابِ الْقَبْرِ وَعَذَابِ النَّارِ",
+    "la": "Allāhummaghfir lahū warḥamhu wa 'āfihi wa'fu 'anhu, wa akrim nuzulahū wa wassi' mudkhalahū, waghsilhu bil-mā'i wats-tsalji wal-barad, wa naqqihī minal-khaṭāyā kamā naqqaitats-tsaubal-abyaḍa minad-danas, wa abdilhu dāran khairam min dārih, wa ahlan khairam min ahlih, wa zaujan khairam min zaujih, wa adkhilhul-jannah, wa a'idzhu min 'adzābil-qabr wa 'adzābin-nār.",
+    "ti": "Ya Allah, ampunilah dia, rahmatilah dia, selamatkanlah dia, dan maafkanlah dia. Muliakanlah tempat tinggalnya, luaskanlah tempat masuknya, dan bersihkanlah dia dengan air, salju, dan embun. Sucikanlah dia dari kesalahan sebagaimana kain putih disucikan dari kotoran. Gantilah rumahnya dengan rumah yang lebih baik, keluarganya dengan keluarga yang lebih baik, dan pasangannya dengan pasangan yang lebih baik. Masukkanlah dia ke surga dan lindungilah dia dari azab kubur dan azab neraka."
+   }
+  ],
+  "clips": [
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/156.mp3",
+    "from": 4.6
+   }
+  ]
+ },
+ {
+  "slug": "doa-yang-hidup-dan-wafat",
+  "title": "Doa untuk yang Hidup dan yang Wafat",
+  "note": "Doa untuk kaum muslimin yang masih hidup dan yang sudah wafat.",
+  "ref": "HR. Abu Dawud, Tirmidzi, dan Ibnu Majah",
+  "blocks": [
+   {
+    "ar": "اللَّهُمَّ اغْفِرْ لِحَيِّنَا وَمَيِّتِنَا، وَشَاهِدِنَا وَغَائِبِنَا، وَصَغِيرِنَا وَكَبِيرِنَا، وَذَكَرِنَا وَأُنْثَانَا. اللَّهُمَّ مَنْ أَحْيَيْتَهُ مِنَّا فَأَحْيِهِ عَلَى الْإِسْلَامِ، وَمَنْ تَوَفَّيْتَهُ مِنَّا فَتَوَفَّهُ عَلَى الإِيمَانِ، اللَّهُمَّ لَا تَحْرِمْنَا أَجْرَهُ، وَلَا تُضِلَّنَا بَعْدَهُ",
+    "la": "Allāhummaghfir li ḥayyinā wa mayyitinā, wa syāhidinā wa gā'ibinā, wa ṣaghīrinā wa kabīrinā, wa dzakarinā wa unts̱ānā. Allāhumma man aḥyaitahū minnā fa aḥyihī 'alal-islām, wa man tawaffaitahū minnā fa tawaffahū 'alal-īmān. Allāhumma lā taḥrimnā ajrahū wa lā tuḍillanā ba'dah.",
+    "ti": "Ya Allah, ampunilah orang yang hidup di antara kami dan yang telah wafat, yang hadir dan yang tidak hadir, yang kecil dan yang dewasa, laki-laki dan perempuan kami. Ya Allah, siapa yang Engkau hidupkan di antara kami, hidupkanlah dia di atas Islam, dan siapa yang Engkau wafatkan di antara kami, wafatkanlah dia di atas iman. Ya Allah, jangan Engkau halangi kami dari pahalanya dan jangan Engkau sesatkan kami sesudahnya."
+   }
+  ],
+  "clips": [
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/157.mp3",
+    "from": 0
+   }
+  ]
+ }
+]

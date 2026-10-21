@@ -48,6 +48,14 @@ const ICONS = {
       <path d="M19.5 8.5c.7-.7 1.5-1.6 1.5-2.7A2.73 2.73 0 0 0 16 4a2.78 2.78 0 0 0-5 1.8c0 1.2.8 2 1.5 2.8L16 12Z" />
     </>
   ),
+  // a scroll with lines of text (Lucide "scroll-text"): the tahlil
+  scroll: (
+    <>
+      <path d="M15 12h-5M15 8h-5" />
+      <path d="M19 17V5a2 2 0 0 0-2-2H4" />
+      <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" />
+    </>
+  ),
   // compass with the north half of the needle filled
   compass: (
     <>
@@ -88,6 +96,7 @@ const MENU = [
   { name: "Al-Qur'an", icon: ICONS.quran, href: "/alquran" },
   { name: "Tasbih", icon: ICONS.beads, href: "/tasbih" },
   { name: "Doa Harian", icon: ICONS.hands, href: "/doa-harian" },
+  { name: "Tahlil & Yasin", icon: ICONS.scroll, href: "/tahlil" },
   { name: "Arah Kiblat", icon: ICONS.compass, href: "/arah-kiblat" },
   { name: "Kalender", icon: ICONS.calendar, href: "/kalender" },
   { name: "Jadwal Salat", icon: ICONS.mosque, href: "/jadwal-salat" },
