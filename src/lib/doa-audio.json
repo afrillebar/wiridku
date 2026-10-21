@@ -1,0 +1,359 @@
+{
+ "bangun-tidur": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/1.mp3",
+   "from": 5.94
+  }
+ ],
+ "sebelum-tidur": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/105.mp3",
+   "from": 0
+  }
+ ],
+ "meletakkan-lambung": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/102.mp3",
+   "from": 0,
+   "to": 15.8
+  }
+ ],
+ "masuk-kamar-mandi": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/10.mp3",
+   "from": 4.44,
+   "to": 11.79
+  }
+ ],
+ "keluar-kamar-mandi": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/11.mp3",
+   "from": 4.73
+  }
+ ],
+ "sesudah-wudhu": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/13.mp3",
+   "from": 6.93
+  },
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/14.mp3",
+   "from": 0,
+   "to": 6.78
+  }
+ ],
+ "keluar-rumah": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/16.mp3",
+   "from": 5.63
+  }
+ ],
+ "masuk-rumah": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/18.mp3",
+   "from": 5.03,
+   "to": 15.62
+  }
+ ],
+ "memakai-pakaian": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/5.mp3",
+   "from": 5.48
+  }
+ ],
+ "pakaian-baru": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/6.mp3",
+   "from": 5.96
+  }
+ ],
+ "masuk-masjid": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/20.mp3",
+   "from": 23.24,
+   "to": 26.58
+  }
+ ],
+ "keluar-masjid": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/21.mp3",
+   "from": 11.71,
+   "to": 14.56
+  }
+ ],
+ "setelah-azan": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/25.mp3",
+   "from": 2.96,
+   "to": 19.22
+  }
+ ],
+ "sebelum-makan": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/178.mp3",
+   "from": 6.55,
+   "to": 7.98
+  },
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/178.mp3",
+   "from": 11.88
+  }
+ ],
+ "sesudah-makan": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/180.mp3",
+   "from": 6.09
+  }
+ ],
+ "berbuka-puasa": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/176.mp3",
+   "from": 4.6
+  }
+ ],
+ "mendoakan-tuan-rumah": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/182.mp3",
+   "from": 6.74,
+   "to": 12.9
+  }
+ ],
+ "naik-kendaraan": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/206.mp3",
+   "from": 6.45
+  }
+ ],
+ "doa-safar": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/207.mp3",
+   "from": 6.61,
+   "to": 56.86
+  }
+ ],
+ "singgah-di-tempat": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/216.mp3",
+   "from": 7.2
+  }
+ ],
+ "pulang-safar": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/217.mp3",
+   "from": 11.02,
+   "to": 35.77
+  }
+ ],
+ "menjenguk-orang-sakit": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/147.mp3",
+   "from": 4.49
+  },
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/148.mp3",
+   "from": 0,
+   "to": 5.73
+  }
+ ],
+ "sakit-di-badan": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/243.mp3",
+   "from": 8,
+   "to": 9.9
+  },
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/243.mp3",
+   "from": 13.78,
+   "to": 19.12
+  }
+ ],
+ "ditimpa-musibah": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/154.mp3",
+   "from": 4.81,
+   "to": 15.7
+  }
+ ],
+ "sedih-dan-cemas": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/121.mp3",
+   "from": 0,
+   "to": 13.62
+  }
+ ],
+ "kesusahan": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/122.mp3",
+   "from": 5.6,
+   "to": 26.12
+  }
+ ],
+ "urusan-sulit": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/139.mp3",
+   "from": 6.77,
+   "to": 15.89
+  }
+ ],
+ "dilunasi-utang": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/136.mp3",
+   "from": 5.64
+  }
+ ],
+ "turun-hujan": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/172.mp3",
+   "from": 5.83,
+   "to": 8.42
+  }
+ ],
+ "setelah-hujan": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/173.mp3",
+   "from": 5.39
+  }
+ ],
+ "angin-kencang": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/166.mp3",
+   "from": 7.01
+  }
+ ],
+ "bersin": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/188.mp3",
+   "from": 5.75,
+   "to": 8
+  },
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/188.mp3",
+   "from": 10.65,
+   "to": 14.24
+  },
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/188.mp3",
+   "from": 18.95
+  }
+ ],
+ "ketika-marah": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/193.mp3",
+   "from": 4.04,
+   "to": 8.38
+  }
+ ],
+ "penutup-majelis": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/196.mp3",
+   "from": 2.95
+  }
+ ],
+ "membalas-kebaikan": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/198.mp3",
+   "from": 6.08
+  }
+ ],
+ "mendoakan-pengantin": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/190.mp3",
+   "from": 4.22
+  }
+ ],
+ "sebelum-berhubungan-suami-istri": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/192.mp3",
+   "from": 4.81,
+   "to": 12.75
+  }
+ ],
+ "sayyidul-istighfar": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/79.mp3",
+   "from": 0
+  }
+ ],
+ "bismillahilladzi": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/86.mp3",
+   "from": 0,
+   "to": 9.81
+  }
+ ],
+ "ilmu-rezeki-amal": [
+  {
+   "url": "https://www.hisnmuslim.com/audio/ar/95.mp3",
+   "from": 0.66,
+   "to": 9.89
+  }
+ ],
+ "sapu-jagat": [
+  {
+   "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/2.mp3",
+   "from": 4579.14,
+   "to": 4592.23
+  }
+ ],
+ "untuk-orang-tua": [
+  {
+   "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/17.mp3",
+   "from": 488.41,
+   "to": 494.55
+  },
+  {
+   "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/14.mp3",
+   "from": 988.59,
+   "to": 1000.65
+  }
+ ],
+ "tambah-ilmu": [
+  {
+   "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/20.mp3",
+   "from": 1324.31,
+   "to": 1328.3
+  }
+ ],
+ "lapang-dada": [
+  {
+   "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/20.mp3",
+   "from": 215.74,
+   "to": 230.62
+  }
+ ],
+ "keluarga-sakinah": [
+  {
+   "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/25.mp3",
+   "from": 1124.57,
+   "to": 1139.28
+  }
+ ],
+ "teguh-hati": [
+  {
+   "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/3.mp3",
+   "from": 144.37,
+   "to": 162.19
+  }
+ ],
+ "doa-nabi-adam": [
+  {
+   "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/7.mp3",
+   "from": 403.19,
+   "to": 419.86
+  }
+ ],
+ "doa-nabi-yunus": [
+  {
+   "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/21.mp3",
+   "from": 1219.09,
+   "to": 1232.44
+  }
+ ],
+ "tidak-membebani": [
+  {
+   "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/2.mp3",
+   "from": 7220.41,
+   "to": 7262.92
+  }
+ ]
+}

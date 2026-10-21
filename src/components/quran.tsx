@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Ambient, isAmbient, type AmbientId } from "@/lib/ambient";
 import { clock, paintFill, useAudioClock } from "@/lib/audio-clock";
 import type { ListenBackground } from "@/lib/content";
@@ -207,6 +207,12 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
   }, [ambientId, playing, prefs.ambientVol]);
 
   useEffect(() => () => ambient.current?.close(), []);
+
+  // ponytail: Next keeps this page mounted but hidden after navigating away; the recitation must not play on with nothing to stop it
+  useLayoutEffect(() => {
+    const a = audioRef.current;
+    return () => a?.pause();
+  }, []);
 
   useEffect(() => {
     if (typeof sleep !== "object" || sleep === null) return;

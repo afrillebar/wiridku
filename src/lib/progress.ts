@@ -203,6 +203,25 @@ export function clearQuranPlace() {
   window.dispatchEvent(new Event(EVENT));
 }
 
+// Doa Harian: the doa heard last (slug) and whether the next one follows by itself.
+type DoaState = { slug: string | null; autoNext: boolean };
+const DOA_KEY = "wirid_doa_v1";
+const readDoa = (): DoaState => {
+  const s = (read(DOA_KEY) ?? {}) as Partial<DoaState>;
+  return { slug: shortText(s.slug), autoNext: s.autoNext !== false };
+};
+
+export function useDoaState() {
+  const raw = useSyncExternalStore(subscribe, () => JSON.stringify(readDoa()), () => JSON.stringify({ slug: null, autoNext: true } satisfies DoaState));
+  const state = useMemo(() => JSON.parse(raw) as DoaState, [raw]);
+  const set = useCallback((patch: Partial<DoaState>) => write(DOA_KEY, { ...readDoa(), ...patch }), []);
+  return { ...state, set };
+}
+
+export function clearDoaPlace() {
+  write(DOA_KEY, { ...readDoa(), slug: null });
+}
+
 // Pengaturan > Penyimpanan Data: what is stored, and wiping it.
 export function useProgressSummary() {
   const raw = useSyncExternalStore(

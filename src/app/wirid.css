@@ -3799,6 +3799,7 @@ button.set-row {
 .lsn-sheet-wrap {
   position: absolute;
   inset: 0;
+  z-index: 10;
   display: flex;
   align-items: flex-end;
   background: rgba(0, 0, 0, 0.4);
@@ -3811,7 +3812,7 @@ button.set-row {
   overflow-y: auto;
   padding: 10px 20px calc(22px + env(safe-area-inset-bottom));
   border-radius: 22px 22px 0 0;
-  background: rgba(20, 31, 27, 0.97);
+  background: #141f1b;
 }
 .lsn-grip {
   display: block;
@@ -3860,6 +3861,7 @@ button.set-row {
   accent-color: #fff;
 }
 .lsn-check input {
+  color-scheme: dark;
   width: 20px;
   height: 20px;
   accent-color: #fff;
@@ -4176,4 +4178,64 @@ button.set-row {
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+}
+.doa-top {
+  display: flex;
+  align-items: center;
+}
+.doa-top .doa-head {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+.doa-play {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-right: 10px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sage-dark);
+  color: var(--on-sage);
+  cursor: pointer;
+}
+.doa-card.now {
+  border-color: var(--sage-dark);
+  box-shadow: 0 0 0 1px var(--sage-dark);
+}
+.doa.has-player {
+  padding-bottom: 150px;
+}
+button.doa-resume {
+  width: calc(100% - 32px);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.doa-player .qrn-now strong {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.doa-auto {
+  margin-top: 4px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  color: var(--text-soft);
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.doa-auto[aria-pressed="true"] {
+  border-color: var(--sage-dark);
+  background: var(--sage-dark);
+  color: var(--on-sage);
 }

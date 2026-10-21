@@ -17,7 +17,9 @@ export function paintFill(r: HTMLInputElement) {
 // Paints the seek bar and its two time labels straight into the DOM, once per frame while playing.
 // Keeping the time in React state re-rendered the whole player four times a second and made the bar step instead of glide.
 // end shows the whole length ("now / total") or what is left ("-remaining").
-export function useAudioClock(audioRef: RefObject<HTMLAudioElement | null>, playing: boolean, end: "total" | "left") {
+// clip: when only a part of the file is the thing playing (a doa cut out of a surah), the bar and labels cover just that part
+export type Clip = { from: number; to: number | null };
+export function useAudioClock(audioRef: RefObject<HTMLAudioElement | null>, playing: boolean, end: "total" | "left", clip?: RefObject<Clip | null>) {
   const rangeRef = useRef<HTMLInputElement>(null);
   const nowRef = useRef<HTMLSpanElement>(null);
   const lastRef = useRef<HTMLSpanElement>(null);
@@ -28,8 +30,11 @@ export function useAudioClock(audioRef: RefObject<HTMLAudioElement | null>, play
     if (!a) return;
     let raf = 0;
     const paint = () => {
-      const d = Number.isFinite(a.duration) ? a.duration : 0;
-      const t = a.currentTime;
+      const whole = Number.isFinite(a.duration) ? a.duration : 0;
+      const c = clip?.current;
+      const from = c?.from ?? 0;
+      const d = c ? Math.max(0, (c.to ?? whole) - from) : whole;
+      const t = c ? Math.min(d, Math.max(0, a.currentTime - from)) : a.currentTime;
       const r = rangeRef.current;
       if (r) {
         if (r.max !== String(d)) {
@@ -62,7 +67,7 @@ export function useAudioClock(audioRef: RefObject<HTMLAudioElement | null>, play
       cancelAnimationFrame(raf);
       for (const e of events) a.removeEventListener(e, paint);
     };
-  }, [audioRef, playing, end]);
+  }, [audioRef, clip, playing, end]);
 
   const hold = useCallback(() => void (dragging.current = true), []);
   const release = useCallback((e: PointerEvent<HTMLInputElement>) => {

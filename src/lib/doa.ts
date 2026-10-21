@@ -32,3 +32,8 @@ export type Prayer = {
 };
 
 export const PRAYER_COLUMNS = "id, slug, category, title, arabic_text, transliteration, translation, reference_text, note, repeat_label";
+
+// Where a doa is heard: streamed from the source, nothing is stored here. from/to (seconds) cut the doa out of a longer file; none means the whole file.
+// A doa with several clips plays them one after another. Built by scripts/build-doa.mjs.
+export type DoaClip = { url: string; from?: number; to?: number };
+export type DoaAudio = Record<string, DoaClip[]>;
