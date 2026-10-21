@@ -180,7 +180,7 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
 
   // arriving from another surah's player: start from the top if it was playing, and reopen the listening view if it was open
   useEffect(() => {
-    let handoff: { surah?: number; listen?: boolean; play?: boolean } | null = null;
+    let handoff: { surah?: number; listen?: boolean; play?: boolean; sleep?: Sleep } | null = null;
     try {
       handoff = JSON.parse(sessionStorage.getItem(HANDOFF_KEY) ?? "null");
       sessionStorage.removeItem(HANDOFF_KEY);
@@ -188,7 +188,11 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
     if (handoff?.surah !== surah.id) return;
     if (handoff.play) pending.current = { t: 0, play: true };
     const listen = !!handoff.listen;
-    const t = setTimeout(() => setListening(listen), 0);
+    const keep = typeof handoff.sleep === "object" && handoff.sleep !== null && handoff.sleep.at > Date.now() ? handoff.sleep : null;
+    const t = setTimeout(() => {
+      setListening(listen);
+      if (keep) setSleep(keep);
+    }, 0);
     return () => clearTimeout(t);
   }, [surah.id]);
 
@@ -205,11 +209,11 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
   useEffect(() => () => ambient.current?.close(), []);
 
   useEffect(() => {
-    if (typeof sleep !== "number") return;
+    if (typeof sleep !== "object" || sleep === null) return;
     const id = setTimeout(() => {
       audioRef.current?.pause();
       setSleep(null);
-    }, Math.max(0, sleep - Date.now()));
+    }, Math.max(0, sleep.at - Date.now()));
     return () => clearTimeout(id);
   }, [sleep]);
 
@@ -351,7 +355,7 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
     if (id === surah.id) return;
     save();
     try {
-      sessionStorage.setItem(HANDOFF_KEY, JSON.stringify({ surah: id, listen, play }));
+      sessionStorage.setItem(HANDOFF_KEY, JSON.stringify({ surah: id, listen, play, sleep }));
     } catch {}
     router.push(`/alquran/${id}`);
   };

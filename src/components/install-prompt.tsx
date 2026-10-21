@@ -1,8 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 type InstallEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<unknown> };
+
+// the browser offers the install only once per page load, so Pengaturan > Pasang Aplikasi reads it from here
+let offered: InstallEvent | null = null;
+const watchers = new Set<() => void>();
+const setOffered = (e: InstallEvent | null) => {
+  offered = e;
+  watchers.forEach((w) => w());
+};
+const watch = (cb: () => void) => {
+  watchers.add(cb);
+  return () => void watchers.delete(cb);
+};
+
+export const useInstallOffer = () => useSyncExternalStore(watch, () => offered, () => null);
+
+export async function installApp() {
+  const e = offered;
+  if (!e) return;
+  setOffered(null);
+  await e.prompt();
+  await e.userChoice.catch(() => {});
+}
+
+export const useInstalled = () =>
+  useSyncExternalStore(
+    (cb) => {
+      const m = window.matchMedia("(display-mode: standalone)");
+      m.addEventListener("change", cb);
+      return () => m.removeEventListener("change", cb);
+    },
+    () => isStandalone(),
+    () => false,
+  );
 
 const DISMISS_KEY = "installPromptDismissedAt";
 const COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
@@ -32,11 +65,13 @@ export function InstallPrompt() {
   useEffect(() => {
     const onPrompt = (e: Event) => {
       e.preventDefault();
+      setOffered(e as InstallEvent);
       if (isStandalone() || recentlyDismissed()) return;
       setEvent(e as InstallEvent);
       setOpen(true);
     };
     const onInstalled = () => {
+      setOffered(null);
       setOpen(false);
       try {
         localStorage.removeItem(DISMISS_KEY);
@@ -57,6 +92,7 @@ export function InstallPrompt() {
   const install = async () => {
     setOpen(false);
     if (event) {
+      setOffered(null);
       await event.prompt();
       await event.userChoice.catch(() => {});
     }

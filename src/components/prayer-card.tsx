@@ -311,6 +311,7 @@ export function LocationPicker({ current, onPick, onClose = () => {}, autoFocus 
         if (!inIndonesia(coords.latitude, coords.longitude)) return setGps({ state: "error", message: "Lokasi Anda di luar Indonesia. Jadwal hanya tersedia untuk Indonesia; pilih kota secara manual." });
         setGps({ state: "naming" });
         onPick(await gpsCity(coords.latitude, coords.longitude));
+        setGps({ state: "idle" });
       },
       (err) => setGps({ state: "error", message: GPS_ERRORS[err.code] ?? GPS_ERRORS[2] }),
       { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 },

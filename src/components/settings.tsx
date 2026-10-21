@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { LocationPicker, cityKey, clearPrayerData, placeName, pretty, useCity, useSavedMonths } from "./prayer-card";
 import { saveAutoplay, useAutoplay } from "./audio";
+import { installApp, useInstalled, useInstallOffer } from "./install-prompt";
 import { TEXT_DEFAULTS, TEXT_LIMITS, clearPlace, clearProgress, clearQuranPlace, useProgressSummary, useQuranPlace, useTextPrefs } from "@/lib/progress";
 import { zoneByOffset, zoneOf } from "@/lib/prayer";
 import { SITE_THEMES, VISITOR_THEME_KEY, type SiteThemeId } from "@/lib/site-theme";
@@ -41,6 +42,7 @@ const MENU = [
   { href: "/pengaturan/tampilan", title: "Tampilan", hint: "Tema warna dan bahasa", icon: <><path d="M12 3a9 9 0 1 0 0 18c1 0 1.6-.8 1.6-1.6 0-.5-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5C21 6.6 17 3 12 3z" /><circle cx="7.5" cy="11" r="1" fill="currentColor" /><circle cx="10" cy="7" r="1" fill="currentColor" /><circle cx="14.5" cy="7" r="1" fill="currentColor" /></> },
   { href: "/pengaturan/bacaan", title: "Tampilan Bacaan", hint: "Latin, terjemahan, dan ukuran huruf", icon: <><path d="M3 5.5c2.5-1 5.5-1 8 .5v13c-2.5-1.5-5.5-1.5-8-.5z" /><path d="M21 5.5c-2.5-1-5.5-1-8 .5v13c2.5-1.5 5.5-1.5 8-.5z" /></> },
   { href: "/pengaturan/audio", title: "Audio", hint: "Pemutaran suara bacaan", icon: <><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" /><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" /></> },
+  { href: "/pengaturan/pasang", title: "Pasang Aplikasi", hint: "Taruh Wiridku di layar utama", icon: <><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5" /><path d="M5 19h14" /></> },
   { href: "/pengaturan/data", title: "Penyimpanan Data", hint: "Progres, jadwal, dan audio tersimpan", icon: <><ellipse cx="12" cy="6" rx="7" ry="3" /><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" /></> },
   { dialog: "data", title: "Informasi Data", hint: "Sumber teks, jadwal, kalender, dan audio", icon: <><path d="M7 3h7l5 5v13H7z" /><path d="M14 3v5h5M10 13h6M10 17h6" /></> },
   { dialog: "privasi", title: "Kebijakan Privasi", hint: "Data yang disimpan dan yang dikirim", icon: <><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z" /><path d="m9 12 2 2 4-4" /></> },
@@ -498,6 +500,36 @@ function ClearButton({ label, onClear, disabled }: { label: string; onClear: () 
     <button type="button" className="ghost-btn" disabled={disabled} onClick={() => setAsking(true)}>
       {label}
     </button>
+  );
+}
+
+// ---------- Pasang Aplikasi ----------
+
+const INSTALL_STEPS = [
+  ["iPhone dan iPad", "Buka Wiridku di Safari. Ketuk tombol Bagikan (kotak dengan panah ke atas), pilih Tambah ke Layar Utama, lalu ketuk Tambah."],
+  ["Android (Chrome)", "Buka Wiridku di Chrome. Ketuk menu titik tiga di pojok kanan atas, pilih Instal aplikasi (atau Tambahkan ke layar utama), lalu ketuk Instal."],
+  ["Komputer (Chrome atau Edge)", "Klik ikon pasang di ujung kanan bilah alamat, atau buka menu titik tiga lalu pilih Instal Wiridku, kemudian klik Instal."],
+] as const;
+
+export function InstallSettings() {
+  const installed = useInstalled();
+  const offer = useInstallOffer();
+  return (
+    <>
+      <section className="set-card">
+        <p className="set-label">Status</p>
+        <p className="set-value">{installed ? "Sudah terpasang di perangkat ini" : "Belum terpasang"}</p>
+        {!installed && offer && (
+          <button type="button" className="set-btn" onClick={installApp}>
+            Pasang sekarang
+          </button>
+        )}
+        {!installed && !offer && <p className="set-note">Ikuti langkah sesuai perangkat Anda di bawah.</p>}
+      </section>
+      <p className="set-intro">Setelah dipasang, Wiridku muncul di layar utama seperti aplikasi biasa dan terbuka tanpa bilah alamat. Halaman yang pernah dibuka tetap bisa dibaca tanpa internet. Tanpa toko aplikasi dan tanpa biaya.</p>
+      <AboutList items={INSTALL_STEPS} />
+      <p className="set-note">Di iPhone, aplikasi dari layar utama bisa menyimpan data terpisah dari Safari, jadi progres, lokasi, dan hitungan tasbih mulai dari awal. Untuk melepas, hapus ikonnya seperti aplikasi lain.</p>
+    </>
   );
 }
 

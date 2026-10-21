@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { buzz as haptic } from "@/lib/haptic";
 
 const KEY = "wiridku_tasbih_v1";
 const TARGETS = [33, 99, 100, 0] as const; // 0 = no target, count freely
@@ -80,7 +81,7 @@ export function Tasbih() {
   const total = s.target ? s.rounds * s.target + s.count : s.count;
 
   const buzz = (pattern: number | number[]) => {
-    if (s.vibrate) navigator.vibrate?.(pattern);
+    if (s.vibrate) haptic(pattern);
   };
 
   const tap = () => {
@@ -195,7 +196,7 @@ export function Tasbih() {
           </button>
         )}
       </div>
-      <p className="tsb-note">Getar tidak didukung di semua perangkat (misalnya iPhone). Hitungan tetap tersimpan bila halaman ditutup.</p>
+      <p className="tsb-note">Getar di iPhone butuh iOS 17.4 ke atas; di perangkat lain tergantung dukungan browser. Hitungan tetap tersimpan bila halaman ditutup.</p>
     </div>
   );
 }

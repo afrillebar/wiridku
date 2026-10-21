@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { buzz } from "@/lib/haptic";
 import { angleDiff, compass8, distanceToKaabaKm, qiblaBearing } from "@/lib/qibla";
 import { placeName, useCity } from "./prayer-card";
 
@@ -42,7 +43,7 @@ export function ArahKiblat() {
 
   // a short buzz the moment the phone points at the Qibla
   useEffect(() => {
-    if (aligned) navigator.vibrate?.(40);
+    if (aligned) buzz(40);
   }, [aligned]);
 
   useEffect(

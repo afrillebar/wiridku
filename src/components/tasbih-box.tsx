@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { TasbihStep } from "@/lib/content";
+import { buzz } from "@/lib/haptic";
 
 export function TasbihBox({ steps }: { steps: TasbihStep[] }) {
   const [index, setIndex] = useState(0);
@@ -12,7 +13,7 @@ export function TasbihBox({ steps }: { steps: TasbihStep[] }) {
 
   const tap = () => {
     if (finished) return;
-    navigator.vibrate?.(8);
+    buzz(8);
     if (count + 1 >= cur.target) {
       setIndex(index + 1);
       setCount(0);

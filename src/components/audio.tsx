@@ -157,6 +157,8 @@ export function AudioProvider({ children, queue = [] }: { children: ReactNode; q
         const older = (await cachedKeys(t.audio.path, t.audio.synthetic).catch(() => []))[0];
         if (older) blob = await cachedBlob(older).catch(() => null);
       }
+      // ponytail: another card was tapped while this one was still looking up its file
+      if (track.current !== t) return;
       if (blob) {
         blobUrl.current = URL.createObjectURL(blob);
         a.src = blobUrl.current;
@@ -166,6 +168,7 @@ export function AudioProvider({ children, queue = [] }: { children: ReactNode; q
         return;
       } else {
         const url = t.audio.url ?? (await freshUrl(t.slug));
+        if (track.current !== t) return;
         if (!url) {
           setNow({ slug: t.slug, status: "error", time: 0, duration: 0, error: "Audio belum bisa diambil. Coba lagi nanti." });
           return;

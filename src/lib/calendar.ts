@@ -18,7 +18,8 @@ export function dayInfo(y: number, m: number, d: number): DayInfo {
   const date = new Date(Date.UTC(y, m - 1, d));
   const weekday = date.getUTCDay();
   // 1 Jan 1970 was a Thursday Wage, pasaran index 3
-  const p = (Math.floor(date.getTime() / 864e5) + 3) % 5;
+  // ponytail: the double modulo keeps dates before 1970 (negative day counts) in 0-4
+  const p = (((Math.floor(date.getTime() / 864e5) + 3) % 5) + 5) % 5;
   const parts = Object.fromEntries(hijriFormat.formatToParts(date).map((x) => [x.type, Number(x.value)]));
   return { y, m, d, weekday, pasaran: PASARAN[p], neptu: NEPTU_HARI[weekday] + NEPTU_PASARAN[p], hijri: { day: parts.day, month: parts.month, year: parts.year } };
 }

@@ -8,8 +8,8 @@ import type { Qari, Surah, Verse } from "@/lib/quran-types";
 import { QariList } from "./qari-list";
 import { SurahList } from "./surah-list";
 
-// null = off, "end" = stop when the surah ends, a number = stop at that Date.now()
-export type Sleep = null | "end" | number;
+// null = off, "end" = stop when the surah ends, an object = stop at `at` (Date.now() ms); `min` is the choice that was tapped, so its button can light up
+export type Sleep = null | "end" | { at: number; min: number };
 const SLEEP_MINUTES = [15, 30, 60];
 
 function Icon({ children, size = 22 }: { children: ReactNode; size?: number }) {
@@ -47,13 +47,19 @@ const LsnVerse = memo(function LsnVerse({ v, surah, on, show, onPlay }: { v: Ver
 // counts down once a second, kept apart so the rest of the view does not re-render with it
 function SleepLabel({ sleep }: { sleep: Sleep }) {
   const [now, setNow] = useState(() => Date.now());
+  const running = typeof sleep === "object" && sleep !== null;
   useEffect(() => {
-    if (typeof sleep !== "number") return;
+    if (!running) return;
+    // ponytail: first tick right away, otherwise a newly chosen timer shows the time since this label was created until the next second
+    const first = setTimeout(() => setNow(Date.now()), 0);
     const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, [sleep]);
+    return () => {
+      clearTimeout(first);
+      clearInterval(id);
+    };
+  }, [running, sleep]);
   if (sleep === "end") return <>Akhir surah</>;
-  if (typeof sleep === "number") return <>{clock((sleep - now) / 1000)}</>;
+  if (running) return <>{clock((sleep.at - now) / 1000)}</>;
   return <>Timer</>;
 }
 
@@ -304,7 +310,7 @@ export function ListenView(p: Props) {
                     Mati
                   </button>
                   {SLEEP_MINUTES.map((m) => (
-                    <button key={m} type="button" onClick={() => p.onSleep(Date.now() + m * 60000)}>
+                    <button key={m} type="button" aria-pressed={typeof p.sleep === "object" && p.sleep !== null && p.sleep.min === m} onClick={() => p.onSleep({ at: Date.now() + m * 60000, min: m })}>
                       {m} menit
                     </button>
                   ))}
@@ -312,7 +318,7 @@ export function ListenView(p: Props) {
                     Akhir surah
                   </button>
                 </div>
-                {typeof p.sleep === "number" && (
+                {typeof p.sleep === "object" && p.sleep !== null && (
                   <p className="lsn-hint">
                     Berhenti dalam <SleepLabel sleep={p.sleep} />.
                   </p>

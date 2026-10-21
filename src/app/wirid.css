@@ -4165,3 +4165,15 @@ button.set-row {
   background: #fff;
   color: #10201a;
 }
+.set-btn {
+  margin-top: 12px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--sage-dark);
+  color: var(--on-sage);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
