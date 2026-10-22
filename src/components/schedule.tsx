@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
-import { PRAYERS, zoneByOffset, zoneOf, type DayTimes, type MonthSchedule } from "@/lib/prayer";
+import { PRAYERS, zoneByOffset, zoneOf, type DayTimes, type MonthSchedule, type PrayerKey } from "@/lib/prayer";
 import { computeDay } from "@/lib/prayer-calc";
 import { MONTHS, WEEKDAYS, dayLabel } from "@/lib/calendar";
+import { enableAdzan } from "./adzan";
+import { useAdzanPrefs } from "@/lib/adzan";
 import { PRAYER_ICON, monthKey, placeName, pretty, readMonths, subscribeStore, useCity } from "./prayer-card";
 
 const FIRST_YEAR = 2000;
@@ -29,8 +31,21 @@ function Icon({ children, size = 20, stroke = 1.9 }: { children: ReactNode; size
   );
 }
 
+function Bell({ on, label, onClick }: { on: boolean; label: string; onClick: () => void }) {
+  return (
+    <button type="button" className={`sched-bell${on ? " on" : ""}`} aria-pressed={on} aria-label={`Adzan ${label}`} data-tip={on ? `Adzan ${label} aktif` : `Aktifkan adzan ${label}`} data-tip-align="end" onClick={onClick}>
+      <Icon size={20} stroke={1.8}>
+        <path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15z" />
+        <path d="M10 21a2 2 0 0 0 4 0" />
+        {!on && <path d="M4 4l16 16" />}
+      </Icon>
+    </button>
+  );
+}
+
 export function JadwalBulanan() {
   const { city } = useCity();
+  const adzan = useAdzanPrefs();
   const tick = useSyncExternalStore(subscribeMinute, minutes, () => 0);
   const saved = useSyncExternalStore(subscribeStore, readMonths, () => NO_MONTHS);
   const [fetched, setFetched] = useState<Record<string, MonthSchedule>>({});
@@ -89,6 +104,14 @@ export function JadwalBulanan() {
       setShown({ y, m: at.getUTCMonth() + 1 });
       setPicked("");
     }
+  };
+
+  // the bell turns the adzan on (from a tap, which the browser requires for sound and notifications) or switches that one prayer
+  const toggleBell = (k: PrayerKey) => {
+    if (!adzan.on) {
+      adzan.set({ on: true, prayers: { [k]: true } });
+      void enableAdzan(adzan);
+    } else adzan.set({ prayers: { [k]: !adzan.prayers[k] } });
   };
 
   const failed = !!key && failedKey === key && !data;
@@ -193,10 +216,14 @@ export function JadwalBulanan() {
                     </span>
                     <span className="sched-name">{c.label}</span>
                     <strong>{time}</strong>
+                    {c.key !== "imsak" && <Bell on={adzan.on && adzan.prayers[c.key as PrayerKey]} label={c.label} onClick={() => toggleBell(c.key as PrayerKey)} />}
                   </li>
                 );
               })}
             </ul>
+            <Link href="/pengaturan/adzan" className="sched-adzan">
+              {adzan.on ? "Adzan aktif · atur adzan dan notifikasi" : "Aktifkan adzan dan notifikasi"}
+            </Link>
           </section>
         </>
       )}

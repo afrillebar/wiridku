@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect, type ReactNode } from "react";
+import { AdzanHost } from "./adzan";
 import { InstallPrompt } from "./install-prompt";
 import { track } from "@/lib/track";
 
@@ -38,6 +39,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
         <PageViews />
       </Suspense>
       {children}
+      <AdzanHost />
       <InstallPrompt />
     </>
   );
