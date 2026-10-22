@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { adzanUrl, claimAdzan, useAdzanPrefs, type AdzanPrefs } from "@/lib/adzan";
+import { adzanUrl, claimAdzan, claimNotificationAsk, useAdzanPrefs, type AdzanPrefs } from "@/lib/adzan";
 import { PRAYERS, type PrayerKey } from "@/lib/prayer";
 import { placeName, usePrayerTimes } from "./prayer-card";
 
@@ -162,12 +162,15 @@ export function AdzanHost() {
   const prefs = useAdzanPrefs();
 
   useEffect(() => {
-    if (!prefs.on || !prefs.sound) return;
-    // after a reload the sound is locked again until the first tap anywhere
-    const unlock = () => unlockAdzan();
-    window.addEventListener("pointerdown", unlock, { once: true });
-    return () => window.removeEventListener("pointerdown", unlock);
-  }, [prefs.on, prefs.sound]);
+    if (!prefs.on || !(prefs.sound || prefs.notify)) return;
+    // the first tap anywhere unlocks the sound (it is locked again after every reload) and, once, asks to show notifications
+    const first = () => {
+      if (prefs.sound) unlockAdzan();
+      if (prefs.notify && notificationsSupported() && Notification.permission === "default" && claimNotificationAsk()) void askNotifications();
+    };
+    window.addEventListener("pointerdown", first, { once: true });
+    return () => window.removeEventListener("pointerdown", first);
+  }, [prefs.on, prefs.sound, prefs.notify]);
 
   return (
     <>

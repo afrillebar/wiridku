@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { LocationPicker, cityKey, clearPrayerData, placeName, pretty, useCity, useSavedMonths } from "./prayer-card";
-import { clearAdzan, useAdzanPrefs } from "@/lib/adzan";
 import { installApp, useInstalled, useInstallOffer } from "./install-prompt";
 import { TEXT_DEFAULTS, TEXT_LIMITS, clearProgress, clearQuranPlace, clearReadingPlace, useProgressSummary, useQuranPlace, useQuranPrefs, useReadingPlace, useTextPrefs } from "@/lib/progress";
 import { zoneByOffset, zoneOf } from "@/lib/prayer";
+import { AR_FONTS, ID_FONTS } from "@/lib/fonts";
 import { DEFAULT_QARI } from "@/lib/quran-types";
 import { SITE_THEMES, VISITOR_THEME_KEY, type SiteThemeId } from "@/lib/site-theme";
 
@@ -41,7 +41,7 @@ export function SubPage({ title, back = "/pengaturan", children }: { title: stri
 const MENU = [
   { href: "/pengaturan/lokasi", title: "Lokasi & Jadwal Salat", hint: "Kota dan sumber jadwal", icon: <><path d="M12 21s-6-5.4-6-10.5a6 6 0 0 1 12 0C18 15.6 12 21 12 21z" /><circle cx="12" cy="10.5" r="2" /></> },
   { href: "/pengaturan/tampilan", title: "Tampilan", hint: "Tema warna dan bahasa", icon: <><path d="M12 3a9 9 0 1 0 0 18c1 0 1.6-.8 1.6-1.6 0-.5-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5C21 6.6 17 3 12 3z" /><circle cx="7.5" cy="11" r="1" fill="currentColor" /><circle cx="10" cy="7" r="1" fill="currentColor" /><circle cx="14.5" cy="7" r="1" fill="currentColor" /></> },
-  { href: "/pengaturan/bacaan", title: "Tampilan Bacaan", hint: "Latin, terjemahan, dan ukuran huruf", icon: <><path d="M3 5.5c2.5-1 5.5-1 8 .5v13c-2.5-1.5-5.5-1.5-8-.5z" /><path d="M21 5.5c-2.5-1-5.5-1-8 .5v13c2.5-1.5 5.5-1.5 8-.5z" /></> },
+  { href: "/pengaturan/bacaan", title: "Tampilan Bacaan", hint: "Latin, terjemahan, ukuran dan jenis huruf", icon: <><path d="M3 5.5c2.5-1 5.5-1 8 .5v13c-2.5-1.5-5.5-1.5-8-.5z" /><path d="M21 5.5c-2.5-1-5.5-1-8 .5v13c2.5-1.5 5.5-1.5 8-.5z" /></> },
   { href: "/pengaturan/audio", title: "Audio", hint: "Pemutaran suara bacaan", icon: <><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" /><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" /></> },
   { href: "/pengaturan/adzan", title: "Adzan & Notifikasi", hint: "Adzan saat waktu salat masuk", icon: <><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15z" /><path d="M10 21a2 2 0 0 0 4 0" /></> },
   { href: "/pengaturan/pasang", title: "Pasang Aplikasi", hint: "Taruh Wiridku di layar utama", icon: <><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5" /><path d="M5 19h14" /></> },
@@ -375,12 +375,40 @@ function SizeDialog({ kind, onClose }: { kind: SizeKind; onClose: () => void }) 
   );
 }
 
+type FontKind = "ar" | "id";
+
+// each choice is shown in its own typeface, so the visitor can see which one reads best
+function FontDialog({ kind, onClose }: { kind: FontKind; onClose: () => void }) {
+  const p = useTextPrefs();
+  const list = kind === "ar" ? AR_FONTS : ID_FONTS;
+  const current = kind === "ar" ? p.fontAr : p.fontId;
+  return (
+    <Dialog title={kind === "ar" ? "Huruf Arab" : "Huruf Indonesia"} onClose={onClose}>
+      <ul className="font-list">
+        {list.map((f) => (
+          <li key={f.id}>
+            <button type="button" className="font-opt" aria-pressed={current === f.id} onClick={() => p.set(kind === "ar" ? { fontAr: f.id as typeof p.fontAr } : { fontId: f.id as typeof p.fontId })}>
+              <span className="font-sample" style={{ fontFamily: f.css }} dir={kind === "ar" ? "rtl" : undefined} lang={kind === "ar" ? "ar" : undefined}>
+                {kind === "ar" ? "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ" : "Dengan nama Allah Yang Maha Pengasih, Maha Penyayang"}
+              </span>
+              <strong>{f.label}</strong>
+              <small>{f.hint}</small>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </Dialog>
+  );
+}
+
 export function ReadingSettings() {
   const p = useTextPrefs();
   const [open, setOpen] = useState<SizeKind | null>(null);
+  const [fontOpen, setFontOpen] = useState<FontKind | null>(null);
   const opener = useRef<HTMLElement | null>(null);
   const close = () => {
     setOpen(null);
+    setFontOpen(null);
     opener.current?.focus();
   };
   return (
@@ -430,7 +458,34 @@ export function ReadingSettings() {
         </ul>
         <p className="set-note">Ketuk salah satu untuk mengatur ukurannya dengan penggeser, lengkap dengan pratinjau.</p>
       </section>
+
+      <section className="set-card">
+        <p className="set-label">Jenis huruf</p>
+        <ul className="size-list">
+          {(["ar", "id"] as const).map((k) => (
+            <li key={k}>
+              <button
+                type="button"
+                className="size-row"
+                aria-haspopup="dialog"
+                onClick={(e) => {
+                  opener.current = e.currentTarget;
+                  setFontOpen(k);
+                }}
+              >
+                <strong>{k === "ar" ? "Huruf Arab" : "Huruf Indonesia"}</strong>
+                <b className="font-now">{(k === "ar" ? AR_FONTS : ID_FONTS).find((f) => f.id === (k === "ar" ? p.fontAr : p.fontId))?.label.replace(/ \(.*/, "")}</b>
+                <Icon size={18}>
+                  <path d="m9 6 6 6-6 6" />
+                </Icon>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <p className="set-note">Huruf Indonesia berlaku untuk seluruh tulisan di aplikasi.</p>
+      </section>
       {open && <SizeDialog kind={open} onClose={close} />}
+      {fontOpen && <FontDialog kind={fontOpen} onClose={close} />}
     </>
   );
 }
@@ -550,7 +605,6 @@ export function DataSettings() {
   const { city, chosen } = useCity();
   const months = useSavedMonths();
   const { info, refresh } = useOfflineAudio();
-  const adzan = useAdzanPrefs();
   const mb = info ? (info.bytes / 1024 / 1024).toFixed(1) : "…";
 
   const clearAudio = async () => {
@@ -614,13 +668,6 @@ export function DataSettings() {
             </span>
           </span>
           <ClearButton label="Hapus" disabled={!chosen && !months} onClear={clearPrayerData} />
-        </li>
-        <li>
-          <span>
-            <strong>Pengaturan adzan</strong>
-            <span>{adzan.on ? "Aktif" : "Mati"}</span>
-          </span>
-          <ClearButton label="Hapus" disabled={!adzan.on} onClear={clearAdzan} />
         </li>
         <li>
           <span>

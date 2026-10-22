@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Amiri, Fraunces, Karla } from "next/font/google";
+import { Amiri, Atkinson_Hyperlegible, Fraunces, Karla, Lexend, Noto_Naskh_Arabic, Noto_Serif, Scheherazade_New } from "next/font/google";
 import { getSiteTheme } from "@/lib/content";
+import { FONT_SCRIPT } from "@/lib/fonts";
 import { SITE_THEMES, VISITOR_THEME_SCRIPT } from "@/lib/site-theme";
 import "./globals.css";
 import "./wirid.css";
@@ -23,6 +24,13 @@ const amiri = Amiri({
   subsets: ["arabic", "latin"],
   weight: ["400", "700"],
 });
+
+// ponytail: the typefaces a visitor can choose in Pengaturan; not preloaded, so a page downloads one only when it is chosen
+const naskh = Noto_Naskh_Arabic({ variable: "--font-naskh", subsets: ["arabic"], weight: ["400", "700"], preload: false });
+const scheherazade = Scheherazade_New({ variable: "--font-scheherazade", subsets: ["arabic"], weight: ["400", "700"], preload: false });
+const atkinson = Atkinson_Hyperlegible({ variable: "--font-atkinson", subsets: ["latin"], weight: ["400", "700"], preload: false });
+const lexend = Lexend({ variable: "--font-lexend", subsets: ["latin"], preload: false });
+const notoSerif = Noto_Serif({ variable: "--font-noto-serif", subsets: ["latin"], weight: ["400", "700"], preload: false });
 
 export const metadata: Metadata = {
   title: "Wiridku — Wirid & Doa Ba'da Salat",
@@ -53,9 +61,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const theme = await getSiteTheme();
   return (
     // ponytail: the head script may swap data-site-theme for the visitor's own choice before React hydrates
-    <html lang="id" data-site-theme={theme} className={`${fraunces.variable} ${karla.variable} ${amiri.variable}`} suppressHydrationWarning>
+    <html lang="id" data-site-theme={theme} className={`${fraunces.variable} ${karla.variable} ${amiri.variable} ${naskh.variable} ${scheherazade.variable} ${atkinson.variable} ${lexend.variable} ${notoSerif.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: VISITOR_THEME_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: FONT_SCRIPT }} />
       </head>
       <body suppressHydrationWarning>{children}</body>
     </html>

@@ -9,9 +9,11 @@ export const ADZAN_URL = {
 export const adzanUrl = (key: PrayerKey) => (key === "subuh" ? ADZAN_URL.subuh : ADZAN_URL.regular);
 
 export type AdzanPrefs = { on: boolean; sound: boolean; notify: boolean; prayers: Record<PrayerKey, boolean> };
-const DEFAULTS: AdzanPrefs = { on: false, sound: true, notify: true, prayers: { subuh: true, dzuhur: true, ashar: true, maghrib: true, isya: true } };
+// on from the start: the visitor turns it off in Pengaturan > Adzan & Notifikasi
+const DEFAULTS: AdzanPrefs = { on: true, sound: true, notify: true, prayers: { subuh: true, dzuhur: true, ashar: true, maghrib: true, isya: true } };
 const KEY = "wirid_adzan_v1";
 const FIRED_KEY = "wirid_adzan_fired_v1";
+const ASKED_KEY = "wirid_adzan_asked_v1";
 const EVENT = "wirid-adzan";
 
 const readPrefs = (): AdzanPrefs => {
@@ -20,7 +22,7 @@ const readPrefs = (): AdzanPrefs => {
     s = JSON.parse(localStorage.getItem(KEY) ?? "{}") ?? {};
   } catch {}
   return {
-    on: s.on === true,
+    on: s.on !== false,
     sound: s.sound !== false,
     notify: s.notify !== false,
     prayers: Object.fromEntries(Object.entries(DEFAULTS.prayers).map(([k, d]) => [k, s.prayers?.[k as PrayerKey] ?? d])) as AdzanPrefs["prayers"],
@@ -59,10 +61,11 @@ export function claimAdzan(id: string) {
   return true;
 }
 
-export function clearAdzan() {
+// the notification permission is asked once, at the first tap, since browsers only allow the question from a tap
+export function claimNotificationAsk() {
   try {
-    localStorage.removeItem(KEY);
-    localStorage.removeItem(FIRED_KEY);
+    if (localStorage.getItem(ASKED_KEY)) return false;
+    localStorage.setItem(ASKED_KEY, "1");
   } catch {}
-  window.dispatchEvent(new Event(EVENT));
+  return true;
 }

@@ -50,11 +50,31 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--text);
-  font-family: var(--font-karla), sans-serif;
+  font-family: var(--id-font, var(--font-karla), sans-serif);
   -webkit-font-smoothing: antialiased;
   padding-bottom: 60px;
 }
 
 ::selection {
   background: var(--gold-soft);
+}
+
+/* the typeface the visitor chose in Pengaturan > Tampilan Bacaan (data-font-* on <html>, set by the head script and the settings) */
+html[data-font-ar="amiri"] {
+  --ar-font: var(--font-amiri), serif;
+}
+html[data-font-ar="naskh"] {
+  --ar-font: var(--font-naskh), var(--font-amiri), serif;
+}
+html[data-font-ar="scheherazade"] {
+  --ar-font: var(--font-scheherazade), var(--font-amiri), serif;
+}
+html[data-font-id="atkinson"] {
+  --id-font: var(--font-atkinson), sans-serif;
+}
+html[data-font-id="lexend"] {
+  --id-font: var(--font-lexend), sans-serif;
+}
+html[data-font-id="serif"] {
+  --id-font: var(--font-noto-serif), serif;
 }

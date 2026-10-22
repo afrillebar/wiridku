@@ -244,7 +244,7 @@ section.phase:first-child {
 .arabic {
   direction: rtl;
   text-align: right;
-  font-family: var(--font-amiri), serif;
+  font-family: var(--ar-font, var(--font-amiri), serif);
   --ar-base: 1.7rem;
   font-size: var(--ar-size, var(--ar-base));
   line-height: 2.15;
@@ -310,7 +310,7 @@ section.phase:first-child {
   text-align: center;
 }
 .tasbih-word .ar {
-  font-family: var(--font-amiri), serif;
+  font-family: var(--ar-font, var(--font-amiri), serif);
   font-size: 1.5rem;
   color: var(--ink);
   direction: rtl;
@@ -2433,7 +2433,7 @@ button.set-row {
   margin: 0;
 }
 .tsb-ar {
-  font-family: var(--font-amiri), serif;
+  font-family: var(--ar-font, var(--font-amiri), serif);
   font-size: 2.1rem;
   line-height: 1.7;
   color: var(--ink);
@@ -3098,7 +3098,7 @@ button.set-row {
 
 /* ---------- Al-Qur'an ---------- */
 .qrn .arabic {
-  font-family: var(--font-quran), var(--font-amiri), serif;
+  font-family: var(--ar-font, var(--font-quran), var(--font-amiri), serif);
 }
 .qrn-resume {
   display: flex;
@@ -3188,7 +3188,7 @@ button.set-row {
 }
 .qrn-ar {
   flex: none;
-  font-family: var(--font-quran), var(--font-amiri), serif;
+  font-family: var(--ar-font, var(--font-quran), var(--font-amiri), serif);
   font-size: 1.3rem;
   color: var(--sage-dark);
 }
@@ -3198,7 +3198,7 @@ button.set-row {
 }
 .qrn-head-ar {
   margin-left: auto;
-  font-family: var(--font-quran), var(--font-amiri), serif;
+  font-family: var(--ar-font, var(--font-quran), var(--font-amiri), serif);
   font-size: 1.5rem;
   color: var(--hero-accent);
 }
@@ -3641,7 +3641,7 @@ button.set-row {
 }
 .lsn-title-surah span {
   margin-left: 4px;
-  font-family: var(--font-quran), var(--font-amiri), serif;
+  font-family: var(--ar-font, var(--font-quran), var(--font-amiri), serif);
   font-weight: 400;
   opacity: 0.8;
 }
@@ -4039,7 +4039,7 @@ button.set-row {
 }
 .surah-list-ar {
   flex: none;
-  font-family: var(--font-quran), var(--font-amiri), serif;
+  font-family: var(--ar-font, var(--font-quran), var(--font-amiri), serif);
   font-size: 1.2rem;
 }
 .surah-list-empty {
@@ -4443,4 +4443,48 @@ span.lsn-title-qari span {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+/* ---------- Jenis huruf ---------- */
+.font-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.font-opt {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.font-opt[aria-pressed="true"] {
+  border-color: var(--sage-dark);
+  box-shadow: 0 0 0 1px var(--sage-dark);
+}
+.font-sample {
+  font-size: 1.35rem;
+  line-height: 1.8;
+}
+.font-opt strong {
+  font-size: 0.9rem;
+}
+.font-opt small {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+}
+.font-now {
+  max-width: min(11rem, 45vw);
+  overflow: hidden;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }

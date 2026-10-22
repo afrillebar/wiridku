@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useSyncExternalStore } from "react";
+import { DEFAULT_AR_FONT, DEFAULT_ID_FONT, applyFonts, isArabicFont, isIndonesianFont, type ArabicFontId, type IndonesianFontId } from "./fonts";
 
 const PROGRESS_KEY = "wirid_progress_v1";
 const STREAK_KEY = "wirid_streak_v1";
@@ -88,7 +89,7 @@ export function useProgress(validIds: string[]) {
 // What the reader shows and how big. Sizes are in px; ranges and defaults are shared with the settings page.
 export const TEXT_LIMITS = { arab: [20, 48], latin: [11, 24], arti: [11, 24] } as const;
 export const TEXT_DEFAULTS = { arab: 27, latin: 15, arti: 14 } as const;
-export type TextPrefs = { showLatin: boolean; showArti: boolean; arab: number; latin: number; arti: number };
+export type TextPrefs = { showLatin: boolean; showArti: boolean; arab: number; latin: number; arti: number; fontAr: ArabicFontId; fontId: IndonesianFontId };
 const TEXT_KEY = "wirid_text_v1";
 
 const px = (n: unknown, [lo, hi]: readonly [number, number], fallback: number) => (typeof n === "number" && Number.isFinite(n) ? Math.min(hi, Math.max(lo, Math.round(n))) : fallback);
@@ -104,14 +105,20 @@ const readText = (): TextPrefs => {
     arab: px(s.arab, TEXT_LIMITS.arab, px(fromStep, TEXT_LIMITS.arab, TEXT_DEFAULTS.arab)),
     latin: px(s.latin, TEXT_LIMITS.latin, TEXT_DEFAULTS.latin),
     arti: px(s.arti, TEXT_LIMITS.arti, TEXT_DEFAULTS.arti),
+    fontAr: isArabicFont(s.fontAr) ? s.fontAr : DEFAULT_AR_FONT,
+    fontId: isIndonesianFont(s.fontId) ? s.fontId : DEFAULT_ID_FONT,
   };
 };
-const TEXT_SERVER = JSON.stringify({ showLatin: true, showArti: true, ...TEXT_DEFAULTS });
+const TEXT_SERVER = JSON.stringify({ showLatin: true, showArti: true, ...TEXT_DEFAULTS, fontAr: DEFAULT_AR_FONT, fontId: DEFAULT_ID_FONT });
 
 export function useTextPrefs() {
   const raw = useSyncExternalStore(subscribe, () => JSON.stringify(readText()), () => TEXT_SERVER);
   const prefs = useMemo(() => JSON.parse(raw) as TextPrefs, [raw]);
-  const set = useCallback((patch: Partial<TextPrefs>) => write(TEXT_KEY, { ...readText(), ...patch }), []);
+  const set = useCallback((patch: Partial<TextPrefs>) => {
+    const next = { ...readText(), ...patch };
+    write(TEXT_KEY, next);
+    if (patch.fontAr || patch.fontId) applyFonts(next.fontAr, next.fontId);
+  }, []);
   return { ...prefs, set };
 }
 
