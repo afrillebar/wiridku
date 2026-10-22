@@ -6,8 +6,9 @@ import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useStat
 import { Ambient, isAmbient, type AmbientId } from "@/lib/ambient";
 import { clock, paintFill, useAudioClock } from "@/lib/audio-clock";
 import type { ListenBackground } from "@/lib/content";
-import { readQuranPlace, useQuranPlace, useQuranPrefs, useTextPrefs, writeQuranPlace } from "@/lib/progress";
+import { addListenSeconds, readQuranPlace, useQuranPlace, useQuranPrefs, useTextPrefs, writeQuranPlace } from "@/lib/progress";
 import { DEFAULT_QARI, type Qari, type Recitation, type Surah, type Verse } from "@/lib/quran-types";
+import { ListenGoalCard } from "./listen-goal";
 import { ListenView, type Sleep } from "./quran-listen";
 import { QariList } from "./qari-list";
 import { SurahList, matchSurah } from "./surah-list";
@@ -70,6 +71,8 @@ export function QuranIndex({ surahs }: { surahs: Surah[] }) {
         </div>
       </header>
 
+      <ListenGoalCard />
+
       {last && place && (
         <Link className="qrn-resume" href={`/alquran/${last.id}`}>
           <span>
@@ -82,7 +85,6 @@ export function QuranIndex({ surahs }: { surahs: Surah[] }) {
           <span className="qrn-resume-go">Lanjutkan</span>
         </Link>
       )}
-
       <div className="doa-search">
         <Icon size={18}>
           <circle cx="11" cy="11" r="7" />
@@ -170,6 +172,8 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
   const pending = useRef<Pending | null>(null);
   const resumed = useRef(false);
   const lastSave = useRef(0);
+  // when the stretch of playing not yet added to the daily listening time began; 0 while paused
+  const heardFrom = useRef(0);
   const [listening, setListening] = useState(false);
   const { rangeRef, nowRef, lastRef, drag } = useAudioClock(audioRef, playing, "total");
   const [sleep, setSleep] = useState<Sleep>(null);
@@ -252,6 +256,23 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
     lastSave.current = Date.now();
   }, [surah.id, qari]);
 
+  // capped, so a phone that slept mid-play does not count the hours it was asleep
+  const logHeard = useCallback(() => {
+    if (!heardFrom.current) return;
+    const now = Date.now();
+    addListenSeconds(Math.min(now - heardFrom.current, 60000) / 1000);
+    heardFrom.current = now;
+  }, []);
+
+  useEffect(() => {
+    if (!playing) return;
+    heardFrom.current = Date.now();
+    return () => {
+      logHeard();
+      heardFrom.current = 0;
+    };
+  }, [playing, logHeard]);
+
   // the highlight follows every frame while playing; timeupdate alone lags up to a quarter second
   useEffect(() => {
     if (!playing) return;
@@ -278,15 +299,21 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
   // closing the tab or switching apps mid-surah still keeps the place
   useEffect(() => {
     const hide = () => {
-      if (document.visibilityState === "hidden") save();
+      if (document.visibilityState !== "hidden") return;
+      save();
+      logHeard();
+    };
+    const leave = () => {
+      save();
+      logHeard();
     };
     document.addEventListener("visibilitychange", hide);
-    window.addEventListener("pagehide", save);
+    window.addEventListener("pagehide", leave);
     return () => {
       document.removeEventListener("visibilitychange", hide);
-      window.removeEventListener("pagehide", save);
+      window.removeEventListener("pagehide", leave);
     };
-  }, [save]);
+  }, [save, logHeard]);
 
   useEffect(() => {
     if (!("mediaSession" in navigator) || typeof MediaMetadata === "undefined") return;
@@ -342,6 +369,7 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
     if (!a) return;
     syncAyah(a.currentTime);
     if (!a.paused && Date.now() - lastSave.current > 5000) save();
+    if (heardFrom.current && Date.now() - heardFrom.current > 15000) logHeard();
   };
 
   const onEnded = () => {
@@ -426,6 +454,8 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
           {surah.arabic}
         </span>
       </header>
+
+      <ListenGoalCard compact />
 
       <div className="qrn-tools">
         <div className="qrn-qari">

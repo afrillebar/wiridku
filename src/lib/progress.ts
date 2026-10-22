@@ -220,6 +220,71 @@ export function writeReadingPlace(id: ReadingModuleId, place: ReadingPlace) {
 
 export const clearReadingPlace = (id: ReadingModuleId) => write(READING_KEYS[id], NO_PLACE);
 
+// Al-Qur'an daily listening goal: goal is minutes a day (0 = off), log the seconds of murotal heard per day
+// for the last LOG_DAYS days, lastDate the last day the goal was met and streak the days in a row up to it.
+export const LISTEN_GOALS = [5, 10, 15, 20, 30, 45, 60];
+const LISTEN_KEY = "wirid_quran_listen_v1";
+const LOG_DAYS = 14;
+const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+type ListenLog = { goal: number; log: Record<string, number>; lastDate: string | null; streak: number };
+export type ListenDay = { date: string; weekday: number; sec: number };
+export type ListenGoal = { goal: number; sec: number; streak: number; met: boolean; week: ListenDay[] };
+
+const daysAgo = (n: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d;
+};
+
+const readListen = (): ListenLog => {
+  const s = (read(LISTEN_KEY) ?? {}) as Partial<ListenLog>;
+  const log: Record<string, number> = {};
+  if (s.log && typeof s.log === "object") for (const [d, sec] of Object.entries(s.log)) if (DAY_RE.test(d) && num(sec) > 0) log[d] = num(sec);
+  return { goal: posInt(s.goal) ?? 0, log, lastDate: shortText(s.lastDate), streak: Math.floor(num(s.streak)) };
+};
+
+// marks today as met once its seconds reach the goal; a day missed in between starts the run again
+const writeListen = (s: ListenLog) => {
+  const day = today();
+  if (s.goal && (s.log[day] ?? 0) >= s.goal * 60 && s.lastDate !== day) {
+    s.streak = s.lastDate === yesterday() ? s.streak + 1 : 1;
+    s.lastDate = day;
+  }
+  const oldest = fmt(daysAgo(LOG_DAYS - 1));
+  for (const d of Object.keys(s.log)) if (d < oldest) delete s.log[d];
+  write(LISTEN_KEY, s);
+};
+
+const listenView = (s: ListenLog): ListenGoal => {
+  const week = Array.from({ length: 7 }, (_, i) => {
+    const d = daysAgo(6 - i);
+    const date = fmt(d);
+    return { date, weekday: d.getDay(), sec: Math.floor(s.log[date] ?? 0) };
+  });
+  return { goal: s.goal, sec: week[6].sec, streak: s.lastDate === today() || s.lastDate === yesterday() ? s.streak : 0, met: s.lastDate === today(), week };
+};
+const LISTEN_SERVER = JSON.stringify({ goal: 0, sec: 0, streak: 0, met: false, week: [] } satisfies ListenGoal);
+
+export function addListenSeconds(sec: number) {
+  if (!(sec > 0)) return;
+  const s = readListen();
+  const day = today();
+  s.log[day] = (s.log[day] ?? 0) + sec;
+  writeListen(s);
+}
+
+export function useListenGoal() {
+  const raw = useSyncExternalStore(subscribe, () => JSON.stringify(listenView(readListen())), () => LISTEN_SERVER);
+  const goal = useMemo(() => JSON.parse(raw) as ListenGoal, [raw]);
+  const setGoal = useCallback((min: number) => writeListen({ ...readListen(), goal: posInt(min) ?? 0 }), []);
+  return { ...goal, setGoal };
+}
+
+// the goal stays; only the minutes heard and the streak go
+export function clearListenLog() {
+  write(LISTEN_KEY, { goal: readListen().goal, log: {}, lastDate: null, streak: 0 } satisfies ListenLog);
+}
+
 // Pengaturan > Penyimpanan Data: what is stored, and wiping it.
 export function useProgressSummary() {
   const raw = useSyncExternalStore(
