@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { WiridApp } from "@/components/wirid-app";
+import { ReadingIndex } from "@/components/reading";
 import { getPublishedPhases } from "@/lib/content";
+import { wiridReadings } from "@/lib/wirid-readings";
 
 export const metadata: Metadata = { title: "Wirid Salat — Wiridku" };
 
 export default async function WiridSalatPage() {
-  return <WiridApp phases={await getPublishedPhases()} />;
+  return <ReadingIndex module="wirid" readings={wiridReadings(await getPublishedPhases())} />;
 }

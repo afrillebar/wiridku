@@ -35,5 +35,6 @@ export const PRAYER_COLUMNS = "id, slug, category, title, arabic_text, translite
 
 // Where a doa is heard: streamed from the source, nothing is stored here. from/to (seconds) cut the doa out of a longer file; none means the whole file.
 // A doa with several clips plays them one after another. Built by scripts/build-doa.mjs.
-export type DoaClip = { url: string; from?: number; to?: number };
+// marks: when one clip holds several lines of the text (verses of a surah), the second at which each line starts in the file, so the page can follow the sound.
+export type DoaClip = { url: string; from?: number; to?: number; marks?: number[] };
 export type DoaAudio = Record<string, DoaClip[]>;

@@ -3,7 +3,6 @@ import { useCallback, useMemo, useSyncExternalStore } from "react";
 const PROGRESS_KEY = "wirid_progress_v1";
 const STREAK_KEY = "wirid_streak_v1";
 const FONT_KEY = "wirid_font_v1";
-const PLACE_KEY = "wirid_place_v1";
 const EVENT = "wirid-storage";
 const MIN_STEP = -2;
 const MAX_STEP = 4;
@@ -116,19 +115,6 @@ export function useTextPrefs() {
   return { ...prefs, set };
 }
 
-export function readPlace() {
-  const value = read(PLACE_KEY);
-  return typeof value === "string" && value ? value : null;
-}
-
-export function usePlace() {
-  return useSyncExternalStore(subscribe, readPlace, () => null);
-}
-
-export function writePlace(slug: string) {
-  write(PLACE_KEY, slug, false);
-}
-
 // Al-Qur'an: the chosen reciter, whether the page follows the recitation, and the last place listened to.
 // t is the second inside the surah's audio file for that reciter; ayah is the verse playing at t.
 // Listening view: bg is a background id, "none" for the plain gradient, or null for the first one the admin added;
@@ -203,29 +189,29 @@ export function clearQuranPlace() {
   window.dispatchEvent(new Event(EVENT));
 }
 
-// Doa Harian and Tahlil: the reading heard last (slug) and whether the next one follows by itself.
-type ListenState = { slug: string | null; autoNext: boolean };
-const DOA_KEY = "wirid_doa_v1";
-const TAHLIL_KEY = "wirid_tahlil_v1";
-const SHALAWAT_KEY = "wirid_shalawat_v1";
-const readListen = (key: string): ListenState => {
-  const s = (read(key) ?? {}) as Partial<ListenState>;
-  return { slug: shortText(s.slug), autoNext: s.autoNext !== false };
-};
+// Doa Harian, Tahlil & Yasin and Shalawat: the reading heard last and where in it. part is the clip, t the second in its file, line the verse or line.
+export type ReadingModuleId = "doa" | "tahlil" | "shalawat" | "wirid";
+export type ReadingPlace = { slug: string | null; part: number; t: number; line: number };
+const READING_KEYS: Record<ReadingModuleId, string> = { doa: "wirid_doa_v1", tahlil: "wirid_tahlil_v1", shalawat: "wirid_shalawat_v1", wirid: "wirid_reading_v1" };
+const NO_PLACE: ReadingPlace = { slug: null, part: 0, t: 0, line: 0 };
+const num = (n: unknown) => (typeof n === "number" && Number.isFinite(n) && n >= 0 ? n : 0);
 
-function useListenState(key: string) {
-  const raw = useSyncExternalStore(subscribe, () => JSON.stringify(readListen(key)), () => JSON.stringify({ slug: null, autoNext: true } satisfies ListenState));
-  const state = useMemo(() => JSON.parse(raw) as ListenState, [raw]);
-  const set = useCallback((patch: Partial<ListenState>) => write(key, { ...readListen(key), ...patch }), [key]);
-  return { ...state, set };
+export function readReadingPlace(id: ReadingModuleId): ReadingPlace {
+  const s = (read(READING_KEYS[id]) ?? {}) as Partial<ReadingPlace>;
+  return { slug: shortText(s.slug), part: Math.floor(num(s.part)), t: num(s.t), line: Math.floor(num(s.line)) };
 }
 
-export const useDoaState = () => useListenState(DOA_KEY);
-export const useTahlilState = () => useListenState(TAHLIL_KEY);
-export const useShalawatState = () => useListenState(SHALAWAT_KEY);
-export const clearDoaPlace = () => write(DOA_KEY, { ...readListen(DOA_KEY), slug: null });
-export const clearTahlilPlace = () => write(TAHLIL_KEY, { ...readListen(TAHLIL_KEY), slug: null });
-export const clearShalawatPlace = () => write(SHALAWAT_KEY, { ...readListen(SHALAWAT_KEY), slug: null });
+export function useReadingPlace(id: ReadingModuleId) {
+  const raw = useSyncExternalStore(subscribe, () => JSON.stringify(readReadingPlace(id)), () => JSON.stringify(NO_PLACE));
+  return useMemo(() => JSON.parse(raw) as ReadingPlace, [raw]);
+}
+
+// saved every few seconds while playing, so other components are not re-rendered for it
+export function writeReadingPlace(id: ReadingModuleId, place: ReadingPlace) {
+  write(READING_KEYS[id], place, false);
+}
+
+export const clearReadingPlace = (id: ReadingModuleId) => write(READING_KEYS[id], NO_PLACE);
 
 // Pengaturan > Penyimpanan Data: what is stored, and wiping it.
 export function useProgressSummary() {
@@ -234,7 +220,7 @@ export function useProgressSummary() {
     () => {
       const s = readStreak();
       const streak = s.lastDate === today() || s.lastDate === yesterday() ? s.streak : 0;
-      return JSON.stringify([readDone().length, streak, readPlace()]);
+      return JSON.stringify([readDone().length, streak, readReadingPlace("wirid").slug]);
     },
     () => "[0,0,null]",
   );
@@ -250,9 +236,3 @@ export function clearProgress() {
   window.dispatchEvent(new Event(EVENT));
 }
 
-export function clearPlace() {
-  try {
-    localStorage.removeItem(PLACE_KEY);
-  } catch {}
-  window.dispatchEvent(new Event(EVENT));
-}

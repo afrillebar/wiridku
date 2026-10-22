@@ -8,7 +8,7 @@ const RANGES = [
   [1, "24 jam"],
   [7, "7 hari"],
   [30, "30 hari"],
-  [90, "90 hari"],
+  [60, "60 hari"],
 ] as const;
 const EVENT_LABEL = { view: "Buka halaman", play: "Putar audio", complete: "Audio selesai" } as Record<string, string>;
 const TZ = "Asia/Jakarta";
@@ -166,7 +166,7 @@ export default async function TrafficPage(props: PageProps<"/putrazea/traffic">)
         </nav>
       </div>
       <p className="muted">
-        Pemakaian situs publik {days === 1 ? "24 jam" : `${days} hari`} terakhir, waktu WIB. Pengunjung dikenali dari ID acak di perangkatnya (bukan nama); admin/editor yang sedang login tercatat dengan emailnya. Lokasi dari jaringan Vercel, jadi kosong saat dijalankan lokal. Alamat IP tidak disimpan. Log disimpan 180 hari.
+        Pemakaian situs publik {days === 1 ? "24 jam" : `${days} hari`} terakhir, waktu WIB. Pengunjung dikenali dari ID acak di perangkatnya (bukan nama); admin/editor yang sedang login tercatat dengan emailnya. Lokasi dari jaringan Vercel, jadi kosong saat dijalankan lokal. Alamat IP tidak disimpan. Log disimpan 60 hari.
       </p>
 
       <div className="stats">

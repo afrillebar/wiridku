@@ -5,6 +5,9 @@ import { getListenBackgrounds } from "@/lib/content";
 import { getQaris, getSurahs, getVerses, isSurahId } from "@/lib/quran";
 import { SURAH_COUNT } from "@/lib/quran-types";
 
+// ponytail: blocking, so a surah page can be rebuilt after its cache expires; without this the rebuild fails on the params
+export const instant = false;
+
 // every surah is built ahead, so reading works from the offline cache once a page has been opened
 export function generateStaticParams() {
   return Array.from({ length: SURAH_COUNT }, (_, i) => ({ surah: String(i + 1) }));

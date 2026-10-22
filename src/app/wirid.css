@@ -652,30 +652,6 @@ footer .rule {
   margin: -2px 0 10px;
 }
 
-/* ---------- YouTube embed ---------- */
-.yt-row {
-  margin-top: 10px;
-}
-.yt-box {
-  margin-top: 12px;
-}
-.yt-frame {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  min-height: 200px;
-  border: 0;
-  border-radius: 10px;
-  background: #000;
-}
-.yt-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 6px;
-}
-
 /* ---------- Phones: bigger touch targets ---------- */
 @media (max-width: 480px) {
   .top-inner {
@@ -3474,11 +3450,25 @@ button.set-row {
 }
 .lsn-bg {
   position: absolute;
-  inset: -24px;
+  inset: -48px;
   z-index: -1;
   background-position: center;
   background-size: cover;
-  filter: blur(3px) brightness(0.5) saturate(0.9);
+  filter: blur(18px) brightness(0.45) saturate(0.9);
+}
+/* the picture itself fits the width of the screen, so a landscape photo is not cut to its middle; its soft edges melt into the blurred copy behind it */
+.lsn-bg-img {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: -1;
+  width: 100%;
+  height: auto;
+  transform: translateY(-50%);
+  filter: brightness(0.65) saturate(0.95);
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
 }
 .lsn-bg::after {
   content: "";
@@ -4254,4 +4244,129 @@ button.doa-resume {
   color: var(--text-soft);
   font-size: 0.72rem;
   font-weight: 700;
+}
+.doa-line {
+  scroll-margin: 140px 0 170px;
+  border-radius: 12px;
+  transition: background-color 0.2s;
+}
+.doa-line.on {
+  margin-right: -8px;
+  margin-left: -8px;
+  padding-right: 8px;
+  padding-left: 8px;
+  background: var(--cal-sel-bg);
+}
+.doa-tools {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.doa-tools .doa-auto {
+  margin-top: 0;
+}
+.doa.has-player {
+  padding-bottom: 190px;
+}
+.reading-ref {
+  margin: 14px 16px 0;
+  font-size: 0.78rem;
+  color: var(--text-soft);
+}
+span.lsn-title-qari {
+  text-decoration: none;
+}
+span.lsn-title-qari span {
+  text-decoration: none;
+}
+.qrn-qari-btn.static {
+  cursor: default;
+}
+.qrn-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.qrn-item .qrn-row {
+  flex: 1;
+  min-width: 0;
+  border-bottom: 0;
+}
+.qrn-item .check-btn {
+  flex: none;
+}
+.qrn-phase h2 {
+  margin: 18px 4px 4px;
+  font-size: 0.72rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.streak.qrn-head-ar {
+  font-family: inherit;
+  font-size: 1rem;
+  color: inherit;
+}
+.check-btn[aria-pressed="true"] {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #fff;
+}
+
+/* ---------- Narrow phones (320-380px): lists, chips and the player keep their text readable ---------- */
+.qrn-ar {
+  flex: 0 1 auto;
+  max-width: 42%;
+  line-height: 1.6;
+  text-align: right;
+}
+.qrn-time,
+.qrn-now strong {
+  white-space: nowrap;
+}
+.qrn-player-row {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+@media (max-width: 380px) {
+  .qrn-row {
+    gap: 8px;
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+  .qrn-num {
+    width: 30px;
+    height: 30px;
+  }
+  .qrn-name strong {
+    font-size: 0.9rem;
+  }
+  .qrn-ar {
+    max-width: 38%;
+    font-size: 1.1rem;
+  }
+  .qrn-tools .doa-cats {
+    flex-wrap: wrap;
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+  .qrn-time,
+  .qrn-now strong {
+    font-size: 0.7rem;
+  }
+  .qrn-player {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+}
+@media (max-width: 360px) {
+  .lsn .lsn-skip {
+    width: 46px;
+    height: 52px;
+  }
+  .lsn .lsn-play {
+    width: 60px;
+    height: 60px;
+  }
 }

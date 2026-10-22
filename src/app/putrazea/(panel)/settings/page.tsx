@@ -1,57 +1,48 @@
-import { saveAudioSource, saveCardAudioSources, saveSettings, saveSiteTheme } from "@/actions/settings";
+import { saveMenus, saveSettings, saveSiteTheme } from "@/actions/settings";
 import Link from "next/link";
 import { ActionForm } from "@/components/admin/action-form";
 import { DataTable } from "@/components/admin/data-table";
-import { SourceBadges, type AudioKinds } from "@/components/admin/lists";
 import { requireAdmin } from "@/lib/auth";
-import { AUDIO_SOURCE_LABEL, parseAudioSource, resolveAudioSource, type AudioSource } from "@/lib/audio-source";
+import doaAudio from "@/lib/doa-audio.json";
+import { MENUS, parseHiddenMenus } from "@/lib/menus";
 import { AUDIO_MAX_MB_LIMIT, getAudioMaxMb } from "@/lib/settings";
 import { parseSiteTheme, SITE_THEMES } from "@/lib/site-theme";
 import { createClient } from "@/lib/supabase/server";
+import { wiridAudio } from "@/lib/wirid-audio";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
-  const [, maxMb, { data: files }, { data: sourceRow }, { data: themeRow }, { data: cards }] = await Promise.all([
+  const [, maxMb, { data: files }, { data: themeRow }, { data: cards }, { data: prayers }, { data: readings }] = await Promise.all([
     requireAdmin(),
     getAudioMaxMb(supabase),
     supabase.from("audio_files").select("file_size_bytes"),
-    supabase.from("app_settings").select("value").eq("key", "audio_source").maybeSingle(),
     supabase.from("app_settings").select("value").eq("key", "site_theme").maybeSingle(),
-    supabase
-      .from("recitations")
-      .select("id, title, sort_order, audio_source, youtube_id, audio_files(synthetic, reciter_name, duration_seconds), phases!inner(title, sort_order)")
-      .eq("publication_status", "published")
-      .eq("is_active", true)
-      .eq("phases.publication_status", "published")
-      .eq("phases.is_active", true),
+    supabase.from("recitations").select("slug, phases!inner(publication_status, is_active)").eq("publication_status", "published").eq("is_active", true).eq("phases.publication_status", "published").eq("phases.is_active", true),
+    supabase.from("daily_prayers").select("slug").eq("publication_status", "published").eq("is_active", true),
+    supabase.from("readings").select("module").eq("publication_status", "published").eq("is_active", true),
   ]);
-  const source = parseAudioSource(sourceRow?.value);
   const theme = parseSiteTheme(themeRow?.value);
+  const hidden = parseHiddenMenus(themeRow?.value);
   const totalBytes = (files ?? []).reduce((sum, f) => sum + Number(f.file_size_bytes), 0);
 
-  type File = { synthetic: boolean; reciter_name: string | null; duration_seconds: number | null };
-  const list = (cards ?? [])
-    .map((c) => {
-      const audio = (Array.isArray(c.audio_files) ? c.audio_files : c.audio_files ? [c.audio_files] : []) as File[];
-      const phase = (Array.isArray(c.phases) ? c.phases[0] : c.phases) as { title: string; sort_order: number };
-      const rec = audio.find((a) => !a.synthetic);
-      return {
-        id: c.id,
-        title: c.title,
-        phase,
-        order: phase.sort_order * 1000 + c.sort_order,
-        rec,
-        choice: (c.audio_source ?? null) as AudioSource | null,
-        kinds: { recording: rec ? (rec.reciter_name ?? "") : null, synthetic: audio.some((a) => a.synthetic), youtube: !!c.youtube_id } satisfies AudioKinds,
-      };
-    })
-    .sort((a, b) => a.order - b.order);
-  const coverage: Record<Exclude<AudioSource, "off">, number> = {
-    mp3: list.filter((c) => c.kinds.recording !== null).length,
-    tts: list.filter((c) => c.kinds.synthetic).length,
-    youtube: list.filter((c) => c.kinds.youtube).length,
-  };
-  const total = list.length;
+  const wirid = (cards ?? []).length;
+  const wiridOnline = (cards ?? []).filter((c) => c.slug in wiridAudio).length;
+  const doa = (prayers ?? []).length;
+  const doaOnline = (prayers ?? []).filter((p) => p.slug in doaAudio).length;
+  const tahlil = (readings ?? []).filter((r) => r.module === "tahlil").length;
+  const shalawat = (readings ?? []).filter((r) => r.module === "shalawat").length;
+  // what each menu holds, where its sound comes from, and where it is edited
+  const overview: { href: string; isi: string; audio: string; edit: { href: string; label: string } | string }[] = [
+    { href: "/wirid-salat", isi: `${wirid} kartu`, audio: `${wiridOnline} online, ${wirid - wiridOnline} dari rekaman admin atau tanpa suara`, edit: { href: "/putrazea/recitations", label: "Bacaan" } },
+    { href: "/alquran", isi: "114 surah", audio: "Online (Quran.com), qari dipilih pengunjung", edit: { href: "/putrazea/latar", label: "Latar mode dengar" } },
+    { href: "/doa-harian", isi: `${doa} doa`, audio: `${doaOnline} dari ${doa} online`, edit: { href: "/putrazea/doa", label: "Doa Harian" } },
+    { href: "/tahlil", isi: `${tahlil} bacaan`, audio: "Online (Quran.com dan Hisnul Muslim)", edit: { href: "/putrazea/readings/tahlil", label: "Tahlil" } },
+    { href: "/shalawat", isi: `${shalawat} shalawat`, audio: "Online (Hisnul Muslim dan Internet Archive)", edit: { href: "/putrazea/readings/shalawat", label: "Shalawat" } },
+    { href: "/tasbih", isi: "Penghitung", audio: "Tanpa audio", edit: "Tidak ada isi untuk diatur" },
+    { href: "/arah-kiblat", isi: "Kompas", audio: "Tanpa audio", edit: "Tidak ada isi untuk diatur" },
+    { href: "/kalender", isi: "Kalender", audio: "Tanpa audio", edit: "Tidak ada isi untuk diatur" },
+    { href: "/jadwal-salat", isi: "Jadwal", audio: "Tanpa audio", edit: "Tidak ada isi untuk diatur" },
+  ];
 
   return (
     <>
@@ -79,83 +70,57 @@ export default async function SettingsPage() {
         </fieldset>
       </ActionForm>
 
-      <h2>Sumber untuk semua</h2>
-      <p className="muted">
-        Dipakai oleh bacaan yang diatur “Ikut semua”. Kartu yang tidak punya sumber pilihannya tampil tanpa tombol audio, tanpa cadangan dari sumber lain.
-      </p>
-      <ActionForm action={saveAudioSource} submitLabel="Simpan pilihan untuk semua">
+      <h2>Menu di Beranda</h2>
+      <p className="muted">Menu yang tidak dicentang tidak muncul di Beranda. Halamannya tetap bisa dibuka lewat tautan langsung.</p>
+      <ActionForm action={saveMenus} submitLabel="Simpan menu">
         <fieldset className="source-choice">
-          <legend>Pilihan untuk semua bacaan</legend>
-          {(Object.keys(AUDIO_SOURCE_LABEL) as AudioSource[]).map((m) => (
-            <label key={m} className="check source-option">
-              <input type="radio" name="mode" value={m} defaultChecked={source === m} />
-              <span>
-                <strong>{AUDIO_SOURCE_LABEL[m]}</strong>
-                <small>
-                  {m === "mp3" && `Rekaman manusia yang diunggah di form bacaan. Tersedia di ${coverage.mp3} dari ${total} kartu. Bisa disimpan offline.`}
-                  {m === "tts" && `File MP3 buatan mesin (Arab lalu arti Indonesia), diberi catatan "bukan rekaman qari". Tersedia di ${coverage.tts} dari ${total} kartu. Bisa disimpan offline.`}
-                  {m === "youtube" && `Tombol "Dengarkan dari YouTube" membuka pemutar resmi YouTube (video terlihat, butuh internet). Tersedia di ${coverage.youtube} dari ${total} kartu.`}
-                  {m === "off" && "Tidak ada tombol audio, YouTube, atau pemutar apa pun."}
-                </small>
-              </span>
+          <legend>Menu yang tampil</legend>
+          {MENUS.map((m) => (
+            <label key={m.href} className="check">
+              <input type="checkbox" name="shown" value={m.href} defaultChecked={!hidden.includes(m.href)} /> {m.name}
             </label>
           ))}
         </fieldset>
-        <label className="check">
-          <input name="apply_all" type="checkbox" /> Terapkan ke setiap bacaan sekarang (hapus pilihan satu per satu)
-        </label>
       </ActionForm>
 
-      <h2>Sumber satu per satu</h2>
-      <p className="muted">
-        Tiap bacaan bisa memakai MP3 rekaman, TTS, atau YouTube sendiri. “Ikut semua” mengikuti pilihan di atas ({AUDIO_SOURCE_LABEL[source]}). File MP3 diganti dari halaman bacaan.
-      </p>
-      <ActionForm action={saveCardAudioSources} submitLabel="Simpan pilihan per bacaan" className="form card-sources">
-        <DataTable
-          keepMounted
-          colSpan={4}
-          empty="Belum ada bacaan terbit."
-          head={
-            <tr>
-              <th>Bacaan</th>
-              <th>Dipakai</th>
-              <th>Audio tersedia</th>
-              <th>Rekaman</th>
-            </tr>
-          }
-          rows={list.map((c) => (
-            <tr key={c.id}>
-              <td className="wide">
-                <Link prefetch={false} href={`/putrazea/recitations/${c.id}#rekaman`}>
-                  <strong>{c.title}</strong>
+      <h2>Isi dan suara tiap menu</h2>
+      <p className="muted">Suara semua menu diputar langsung dari internet, tidak disimpan di server. Rekaman MP3 yang diunggah admin hanya dipakai kalau sebuah bacaan Wirid tidak punya sumber online.</p>
+      <DataTable
+        colSpan={4}
+        empty="—"
+        head={
+          <tr>
+            <th>Menu</th>
+            <th>Isi</th>
+            <th>Suara</th>
+            <th>Diatur di</th>
+          </tr>
+        }
+        rows={overview.map((o) => (
+          <tr key={o.href}>
+            <td className="wide">
+              <strong>{MENUS.find((m) => m.href === o.href)?.name}</strong>
+              {hidden.includes(o.href) && (
+                <>
+                  <br />
+                  <small className="muted">disembunyikan dari Beranda</small>
+                </>
+              )}
+            </td>
+            <td data-label="Isi">{o.isi}</td>
+            <td data-label="Suara">{o.audio}</td>
+            <td data-label="Diatur di">
+              {typeof o.edit === "string" ? (
+                <span className="muted">{o.edit}</span>
+              ) : (
+                <Link prefetch={false} href={o.edit.href}>
+                  {o.edit.label}
                 </Link>
-                <br />
-                <small className="muted">{c.phase.title}</small>
-              </td>
-              <td data-label="Dipakai">
-                <select name={`source:${c.id}`} defaultValue={c.choice ?? "default"} aria-label={`Sumber audio ${c.title}`}>
-                  <option value="default">Ikut semua</option>
-                  {(Object.keys(AUDIO_SOURCE_LABEL) as AudioSource[]).map((m) => (
-                    <option key={m} value={m}>
-                      {AUDIO_SOURCE_LABEL[m]}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td data-label="Audio">
-                <SourceBadges audio={c.kinds} source={resolveAudioSource(c.choice, source)} />
-              </td>
-              <td data-label="Rekaman">
-                {c.rec ? `${c.rec.reciter_name ?? "Tanpa nama"} · ${Math.round(Number(c.rec.duration_seconds ?? 0))} dtk` : <span className="muted">—</span>}
-                <br />
-                <Link prefetch={false} href={`/putrazea/recitations/${c.id}#rekaman`}>
-                  Ganti MP3
-                </Link>
-              </td>
-            </tr>
-          ))}
-        />
-      </ActionForm>
+              )}
+            </td>
+          </tr>
+        ))}
+      />
 
       <h2>Batas unggahan</h2>
       <ActionForm action={saveSettings} submitLabel="Simpan batas">

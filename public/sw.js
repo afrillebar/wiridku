@@ -1,5 +1,5 @@
 // Wiridku service worker. Bump VERSION when the caching rules below change.
-const VERSION = "wiridku-v12";
+const VERSION = "wiridku-v13";
 const PRECACHE = ["/", "/wirid-salat", "/kalender", "/jadwal-salat", "/tasbih", "/arah-kiblat", "/doa-harian", "/tahlil", "/shalawat", "/alquran", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/favicon.png", "/apple-touch-icon.png"];
 
 self.addEventListener("install", (event) => {

@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { AMBIENTS, type AmbientId } from "@/lib/ambient";
-import { clock, paintFill, useAudioClock } from "@/lib/audio-clock";
+import { clock, paintFill, useAudioClock, type Clip } from "@/lib/audio-clock";
 import type { ListenBackground } from "@/lib/content";
 import type { Qari, Surah, Verse } from "@/lib/quran-types";
 import { QariList } from "./qari-list";
@@ -27,11 +27,11 @@ const SHOW_OPTIONS = [
   { key: "arti", label: "Terjemahan" },
 ] as const;
 
-const LsnVerse = memo(function LsnVerse({ v, surah, on, show, onPlay }: { v: Verse; surah: number; on: boolean; show: ListenShow; onPlay: (n: number) => void }) {
+const LsnVerse = memo(function LsnVerse({ v, surah, unit, on, show, onPlay }: { v: Verse; surah: number; unit: string; on: boolean; show: ListenShow; onPlay: (n: number) => void }) {
   return (
     <article id={`dengar-${v.n}`} className={`lsn-verse${on ? " on" : ""}`} aria-current={on ? "true" : undefined}>
-      <button type="button" className="lsn-key" onClick={() => onPlay(v.n)} aria-label={`Putar dari ayat ${v.n}`}>
-        {surah}:{v.n}
+      <button type="button" className="lsn-key" onClick={() => onPlay(v.n)} aria-label={`Putar dari ${unit} ${v.n}`}>
+        {v.key ?? `${surah}:${v.n}`}
       </button>
       {show.arab && (
         <p className="arabic" dir="rtl" lang="ar">
@@ -45,7 +45,7 @@ const LsnVerse = memo(function LsnVerse({ v, surah, on, show, onPlay }: { v: Ver
 });
 
 // counts down once a second, kept apart so the rest of the view does not re-render with it
-function SleepLabel({ sleep }: { sleep: Sleep }) {
+function SleepLabel({ sleep, end }: { sleep: Sleep; end: string }) {
   const [now, setNow] = useState(() => Date.now());
   const running = typeof sleep === "object" && sleep !== null;
   useEffect(() => {
@@ -58,12 +58,22 @@ function SleepLabel({ sleep }: { sleep: Sleep }) {
       clearInterval(id);
     };
   }, [running, sleep]);
-  if (sleep === "end") return <>Akhir surah</>;
+  if (sleep === "end") return <>{end}</>;
   if (running) return <>{clock((sleep.at - now) / 1000)}</>;
   return <>Timer</>;
 }
 
+// the words that name what is being read: a surah and its verses, or a bacaan and its baris
+export type ListenLabels = { part: string; unit: string; audio: string };
+const QURAN_LABELS: ListenLabels = { part: "surah", unit: "ayat", audio: "murotal" };
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
 type Props = {
+  // labels and qariPick are for readings other than the Qur'an: no reciter to choose, and other words for surah and ayat
+  labels?: ListenLabels;
+  qariPick?: boolean;
+  // when the sound is a stretch of a longer file, the bar and the times cover that stretch only, and the value onSeek gets counts from its start
+  clipRef?: RefObject<Clip | null>;
   surah: Surah;
   surahs: Surah[];
   qaris: Qari[];
@@ -103,8 +113,9 @@ type Props = {
 };
 
 export function ListenView(p: Props) {
+  const L = p.labels ?? QURAN_LABELS;
   const [sheet, setSheet] = useState<null | "suara" | "timer" | "tampilan" | "surah" | "qari">(null);
-  const { rangeRef, nowRef, lastRef, drag } = useAudioClock(p.audioRef, p.playing, "left");
+  const { rangeRef, nowRef, lastRef, drag } = useAudioClock(p.audioRef, p.playing, "left", p.clipRef);
   // the last text still shown cannot be hidden, or the screen would be empty
   const shown = SHOW_OPTIONS.filter((o) => p.show[o.key]).length;
   const closeBtn = useRef<HTMLButtonElement>(null);
@@ -164,8 +175,10 @@ export function ListenView(p: Props) {
   const ambientLabel = AMBIENTS.find((a) => a.id === p.ambient)?.label ?? "Suara latar";
 
   return (
-    <div className="lsn" role="dialog" aria-modal="true" aria-label={`Mode dengar, surah ${p.surah.name}`}>
+    <div className="lsn" role="dialog" aria-modal="true" aria-label={`Mode dengar, ${L.part} ${p.surah.name}`}>
       <div className={`lsn-bg${picked ? "" : " plain"}`} style={picked ? { backgroundImage: `url("${picked.url}")` } : undefined} aria-hidden="true" />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {picked && <img className="lsn-bg-img" src={picked.url} alt="" aria-hidden="true" />}
 
       <header className="lsn-top">
         <button ref={closeBtn} type="button" className="lsn-round" onClick={p.onClose} aria-label="Tutup mode dengar">
@@ -185,7 +198,7 @@ export function ListenView(p: Props) {
           <Icon size={18}>
             <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
           </Icon>
-          <SleepLabel sleep={p.sleep} />
+          <SleepLabel sleep={p.sleep} end={`Akhir ${L.part}`} />
         </button>
         <button type="button" className="lsn-round" onClick={() => setSheet("tampilan")} aria-haspopup="dialog" aria-label="Pengaturan tampilan">
           <Icon>
@@ -198,7 +211,7 @@ export function ListenView(p: Props) {
       <div className="lsn-stage">
         <div ref={scroller} className="lsn-verses">
           {p.verses.map((v) => (
-            <LsnVerse key={v.n} v={v} surah={p.surah.id} on={p.active === v.n} show={p.show} onPlay={p.onPlayFrom} />
+            <LsnVerse key={v.n} v={v} surah={p.surah.id} unit={L.unit} on={p.active === v.n} show={p.show} onPlay={p.onPlayFrom} />
           ))}
         </div>
       </div>
@@ -206,22 +219,28 @@ export function ListenView(p: Props) {
       <div className="lsn-player">
         <div className="lsn-now">
           <div className="lsn-title">
-            <button type="button" className="lsn-title-surah" onClick={() => setSheet("surah")} aria-haspopup="dialog" aria-label={`${p.surah.id}. ${p.surah.name}, pilih surah lain`}>
+            <button type="button" className="lsn-title-surah" onClick={() => setSheet("surah")} aria-haspopup="dialog" aria-label={`${p.surah.id}. ${p.surah.name}, pilih ${L.part} lain`}>
               {p.surah.id}. {p.surah.name} <span lang="ar">{p.surah.arabic}</span>
             </button>
-            <button type="button" className="lsn-title-qari" onClick={() => setSheet("qari")} aria-haspopup="dialog" aria-label={`Qari ${p.qariName}, ganti qari`}>
-              <span>{p.qariName}</span>
-              <Icon size={14}>
-                <path d="m6 9 6 6 6-6" />
-              </Icon>
-            </button>
+            {p.qariPick === false ? (
+              <span className="lsn-title-qari">
+                <span>{p.qariName}</span>
+              </span>
+            ) : (
+              <button type="button" className="lsn-title-qari" onClick={() => setSheet("qari")} aria-haspopup="dialog" aria-label={`Qari ${p.qariName}, ganti qari`}>
+                <span>{p.qariName}</span>
+                <Icon size={14}>
+                  <path d="m6 9 6 6 6-6" />
+                </Icon>
+              </button>
+            )}
             <span className="lsn-title-status">{p.status}</span>
           </div>
           <button type="button" className="lsn-list" onClick={() => setSheet("surah")} aria-haspopup="dialog">
             <Icon size={18}>
               <path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" />
             </Icon>
-            Surah
+            {cap(L.part)}
           </button>
         </div>
 
@@ -238,7 +257,7 @@ export function ListenView(p: Props) {
             p.onSeek(Number(e.currentTarget.value));
           }}
           {...drag}
-          aria-label="Posisi murotal"
+          aria-label={`Posisi ${L.audio}`}
         />
         <div className="lsn-times">
           <span ref={nowRef}>0:00</span>
@@ -246,41 +265,41 @@ export function ListenView(p: Props) {
         </div>
 
         <div className="lsn-btns">
-          <button type="button" className="lsn-skip" onClick={p.onPrevSurah} disabled={!p.prevName} aria-label={p.prevName ? `Surah sebelumnya, ${p.prevName}` : "Surah sebelumnya"}>
+          <button type="button" className="lsn-skip" onClick={p.onPrevSurah} disabled={!p.prevName} aria-label={p.prevName ? `${cap(L.part)} sebelumnya, ${p.prevName}` : `${cap(L.part)} sebelumnya`}>
             <Icon size={22}>
               <path d="M6 5v14" strokeWidth="2.4" />
               <path d="M19 5.5 8.5 12 19 18.5z" fill="currentColor" />
             </Icon>
-            <small>Surah</small>
+            <small>{cap(L.part)}</small>
           </button>
-          <button type="button" className="lsn-skip" onClick={() => p.onStep(-1)} disabled={!p.canStep} aria-label="Ayat sebelumnya">
+          <button type="button" className="lsn-skip" onClick={() => p.onStep(-1)} disabled={!p.canStep} aria-label={`${cap(L.unit)} sebelumnya`}>
             <Icon size={22}>
               <path d="M11.5 6 4 12l7.5 6zM20.5 6 13 12l7.5 6z" fill="currentColor" />
             </Icon>
-            <small>Ayat</small>
+            <small>{cap(L.unit)}</small>
           </button>
           <button type="button" className="lsn-play" onClick={p.onToggle} disabled={!p.canPlay} aria-label={p.playing ? "Jeda" : "Putar"}>
             <Icon size={30}>{p.playing ? <path d="M8 5v14M16 5v14" strokeWidth="3.2" /> : <path d="M8 4.5v15l12-7.5z" fill="currentColor" />}</Icon>
           </button>
-          <button type="button" className="lsn-skip" onClick={() => p.onStep(1)} disabled={!p.canStep} aria-label="Ayat berikutnya">
+          <button type="button" className="lsn-skip" onClick={() => p.onStep(1)} disabled={!p.canStep} aria-label={`${cap(L.unit)} berikutnya`}>
             <Icon size={22}>
               <path d="M12.5 6 20 12l-7.5 6zM3.5 6 11 12l-7.5 6z" fill="currentColor" />
             </Icon>
-            <small>Ayat</small>
+            <small>{cap(L.unit)}</small>
           </button>
-          <button type="button" className="lsn-skip" onClick={p.onNextSurah} disabled={!p.nextName} aria-label={p.nextName ? `Surah berikutnya, ${p.nextName}` : "Surah berikutnya"}>
+          <button type="button" className="lsn-skip" onClick={p.onNextSurah} disabled={!p.nextName} aria-label={p.nextName ? `${cap(L.part)} berikutnya, ${p.nextName}` : `${cap(L.part)} berikutnya`}>
             <Icon size={22}>
               <path d="M18 5v14" strokeWidth="2.4" />
               <path d="M5 5.5 15.5 12 5 18.5z" fill="currentColor" />
             </Icon>
-            <small>Surah</small>
+            <small>{cap(L.part)}</small>
           </button>
         </div>
       </div>
 
       {sheet && (
         <div className="lsn-sheet-wrap" onClick={() => setSheet(null)}>
-          <section className="lsn-sheet" role="dialog" aria-label={{ suara: "Suara latar", timer: "Timer tidur", tampilan: "Pengaturan tampilan", surah: "Pilih surah", qari: "Pilih qari" }[sheet]} onClick={(e) => e.stopPropagation()}>
+          <section className="lsn-sheet" role="dialog" aria-label={{ suara: "Suara latar", timer: "Timer tidur", tampilan: "Pengaturan tampilan", surah: `Pilih ${L.part}`, qari: "Pilih qari" }[sheet]} onClick={(e) => e.stopPropagation()}>
             <span className="lsn-grip" aria-hidden="true" />
             {sheet === "suara" && (
               <>
@@ -299,7 +318,7 @@ export function ListenView(p: Props) {
                   <span>Volume</span>
                   <input type="range" min={0} max={100} value={Math.round(p.ambientVol * 100)} onChange={(e) => p.onAmbientVol(Number(e.target.value) / 100)} disabled={!p.ambient} />
                 </label>
-                <p className="lsn-hint">Suara latar ikut berhenti saat murotal dijeda.</p>
+                <p className="lsn-hint">Suara latar ikut berhenti saat {L.audio} dijeda.</p>
               </>
             )}
             {sheet === "timer" && (
@@ -315,24 +334,24 @@ export function ListenView(p: Props) {
                     </button>
                   ))}
                   <button type="button" aria-pressed={p.sleep === "end"} onClick={() => p.onSleep("end")}>
-                    Akhir surah
+                    Akhir {L.part}
                   </button>
                 </div>
                 {typeof p.sleep === "object" && p.sleep !== null && (
                   <p className="lsn-hint">
-                    Berhenti dalam <SleepLabel sleep={p.sleep} />.
+                    Berhenti dalam <SleepLabel sleep={p.sleep} end={`Akhir ${L.part}`} />.
                   </p>
                 )}
                 <label className="lsn-check">
                   <input type="checkbox" checked={p.autoNext} onChange={(e) => p.onAutoNext(e.target.checked)} disabled={!p.nextName} />
-                  Lanjut otomatis ke surah berikutnya
+                  Lanjut otomatis ke {L.part} berikutnya
                 </label>
               </>
             )}
             {sheet === "surah" && (
               <>
-                <h2>Pilih surah</h2>
-                <SurahList surahs={p.surahs} current={p.surah.id} onPick={p.onSurah} />
+                <h2>Pilih {L.part}</h2>
+                <SurahList surahs={p.surahs} current={p.surah.id} onPick={p.onSurah} unit={L.unit} noun={L.part} />
               </>
             )}
             {sheet === "qari" && (

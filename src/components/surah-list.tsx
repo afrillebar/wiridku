@@ -12,7 +12,7 @@ export function matchSurah(s: Surah, query: string) {
 }
 
 // Searchable list of all surahs for jumping straight to one; opens scrolled to the current surah.
-export function SurahList({ surahs, current, onPick }: { surahs: Surah[]; current: number; onPick: (id: number) => void }) {
+export function SurahList({ surahs, current, onPick, unit = "ayat", noun = "surah" }: { surahs: Surah[]; current: number; onPick: (id: number) => void; unit?: string; noun?: string }) {
   const [query, setQuery] = useState("");
   const here = useRef<HTMLLIElement>(null);
   const shown = useMemo(() => surahs.filter((s) => matchSurah(s, query)), [surahs, query]);
@@ -23,7 +23,7 @@ export function SurahList({ surahs, current, onPick }: { surahs: Surah[]; curren
 
   return (
     <div className="surah-list">
-      <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cari surah, mis. Yasin atau 36" aria-label="Cari surah" autoComplete="off" />
+      <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={noun === "surah" ? "Cari surah, mis. Yasin atau 36" : `Cari ${noun}`} aria-label={`Cari ${noun}`} autoComplete="off" />
       <ol>
         {shown.map((s) => (
           <li key={s.id} ref={s.id === current ? here : undefined}>
@@ -32,7 +32,7 @@ export function SurahList({ surahs, current, onPick }: { surahs: Surah[]; curren
               <span className="surah-list-name">
                 <strong>{s.name}</strong>
                 <small>
-                  {s.meaning} · {s.verses} ayat
+                  {s.meaning} · {s.verses} {unit}
                 </small>
               </span>
               <span className="surah-list-ar" lang="ar" dir="rtl">
@@ -44,7 +44,7 @@ export function SurahList({ surahs, current, onPick }: { surahs: Surah[]; curren
       </ol>
       {!shown.length && (
         <p className="surah-list-empty" role="status">
-          Surah tidak ditemukan.
+          {noun === "surah" ? "Surah" : "Bacaan"} tidak ditemukan.
         </p>
       )}
     </div>

@@ -1163,3 +1163,13 @@ body[data-admin-theme="malam"] .admin label.source-option:has(input:checked) {
 .admin .bg-preview img {
   border-radius: 10px;
 }
+
+/* the brand, theme switch and two buttons do not fit one row at 320px */
+@media (max-width: 400px) {
+  .admin-top-inner {
+    flex-wrap: wrap;
+  }
+  .admin-user {
+    flex-wrap: wrap;
+  }
+}

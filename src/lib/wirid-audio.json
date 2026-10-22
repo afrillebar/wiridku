@@ -1,0 +1,262 @@
+{
+ "f1-1": {
+  "clips": [
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/250.mp3",
+    "from": 4.7,
+    "to": 11.5
+   }
+  ]
+ },
+ "f1-2": {
+  "clips": [
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/72.mp3",
+    "from": 0,
+    "to": 13.74
+   }
+  ]
+ },
+ "f1-3": {
+  "clips": [
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/66.mp3",
+    "from": 12.92,
+    "to": 20
+   }
+  ]
+ },
+ "f1-4": {
+  "clips": [
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/59.mp3",
+    "from": 0,
+    "to": 5.7
+   }
+  ]
+ },
+ "f1-5": {
+  "clips": [
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/67.mp3",
+    "from": 0,
+    "to": 22.12
+   }
+  ]
+ },
+ "f1-6": {
+  "clips": [
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/68.mp3",
+    "from": 0,
+    "to": 34.58
+   }
+  ]
+ },
+ "f2-3": {
+  "clips": [
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/69.mp3",
+    "from": 12.2,
+    "to": 22.98
+   }
+  ]
+ },
+ "f3-0b": {
+  "clips": [
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/53.mp3",
+    "from": 9.08
+   }
+  ]
+ },
+ "f3-5": {
+  "clips": [
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/95.mp3",
+    "from": 0.66,
+    "to": 9.89
+   }
+  ]
+ },
+ "f3-8": {
+  "clips": [
+   {
+    "url": "https://www.hisnmuslim.com/audio/ar/82.mp3",
+    "from": 0,
+    "to": 13.52
+   }
+  ]
+ },
+ "f2-1": {
+  "clips": [
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/1.mp3",
+    "from": 0,
+    "to": 46.49
+   }
+  ]
+ },
+ "f2-2": {
+  "clips": [
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/2.mp3",
+    "from": 6153.05,
+    "to": 6205.01
+   }
+  ]
+ },
+ "f2-4": {
+  "clips": [
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/112.mp3",
+    "from": 0,
+    "to": 13.35
+   },
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/113.mp3",
+    "from": 0,
+    "to": 23.82
+   },
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/114.mp3",
+    "from": 0,
+    "to": 40.91
+   }
+  ]
+ },
+ "f3-0": {
+  "clips": [
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/1.mp3",
+    "from": 0,
+    "to": 11.68
+   }
+  ]
+ },
+ "f3-1": {
+  "clips": [
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/7.mp3",
+    "from": 403.29,
+    "to": 419.86
+   }
+  ]
+ },
+ "f3-2": {
+  "clips": [
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/17.mp3",
+    "from": 488.51,
+    "to": 494.55
+   },
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/14.mp3",
+    "from": 988.8,
+    "to": 1000.65
+   }
+  ],
+  "lines": [
+   {
+    "ar": "رَبِّ ارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا",
+    "la": "Rabbirhamhumaa kamaa rabbayaanii shaghiiraa",
+    "ti": "Ya Tuhanku, sayangilah keduanya sebagaimana mereka berdua telah mendidik dan merawatku di waktu kecil"
+   },
+   {
+    "ar": "رَبَّنَا اغْفِرْ لِي وَلِوَالِدَيَّ وَلِلْمُؤْمِنِينَ يَوْمَ يَقُومُ الْحِسَابُ",
+    "la": "Rabbanaghfir lii wa liwaalidayya wa lil mu'miniina yauma yaquumul hisaab",
+    "ti": "Ya Tuhan kami, ampunilah aku, kedua orang tuaku, dan orang-orang mukmin pada hari perhitungan"
+   }
+  ]
+ },
+ "f3-3": {
+  "clips": [
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/3.mp3",
+    "from": 144.87,
+    "to": 162.19
+   },
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/59.mp3",
+    "from": 279.82,
+    "to": 316.47
+   }
+  ],
+  "lines": [
+   {
+    "ar": "رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا وَهَبْ لَنَا مِنْ لَدُنْكَ رَحْمَةً إِنَّكَ أَنْتَ الْوَهَّابُ",
+    "la": "Rabbanaa laa tuzigh quluubanaa ba'da idz hadaitanaa wa hab lanaa min ladunka rahmah, innaka antal wahhaab",
+    "ti": "Ya Tuhan kami, janganlah Engkau condongkan hati kami kepada kesesatan setelah Engkau beri petunjuk, dan karuniakanlah kami rahmat dari sisi-Mu, sungguh Engkau Maha Pemberi"
+   },
+   {
+    "ar": "رَبَّنَا اغْفِرْ لَنَا وَلِإِخْوَانِنَا الَّذِينَ سَبَقُونَا بِالْإِيمَانِ وَلَا تَجْعَلْ فِي قُلُوبِنَا غِلًّا لِلَّذِينَ آمَنُوا رَبَّنَا إِنَّكَ رَءُوفٌ رَحِيمٌ",
+    "la": "Rabbanaghfir lanaa wa li-ikhwaaninal ladziina sabaquunaa bil iimaan, wa laa taj'al fii quluubinaa ghillal lilladziina aamanuu, rabbanaa innaka ra'uufur rahiim",
+    "ti": "Dan ampunilah kami serta saudara-saudara kami yang beriman lebih dulu, dan jangan tanamkan kedengkian dalam hati kami terhadap orang beriman. Sungguh Engkau Maha Penyantun lagi Maha Penyayang"
+   }
+  ]
+ },
+ "f3-4": {
+  "clips": [
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/25.mp3",
+    "from": 1124.67,
+    "to": 1139.28
+   }
+  ]
+ },
+ "f3-6": {
+  "clips": [
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/2.mp3",
+    "from": 7220.51,
+    "to": 7264.12
+   }
+  ]
+ },
+ "f3-7": {
+  "clips": [
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/2.mp3",
+    "from": 2749.81,
+    "to": 2760.44
+   },
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/2.mp3",
+    "from": 2777.4,
+    "to": 2787.03
+   },
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/2.mp3",
+    "from": 4579.24,
+    "to": 4592.28
+   },
+   {
+    "url": "https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/37.mp3",
+    "from": 1440.8,
+    "to": 1449.38
+   }
+  ],
+  "lines": [
+   {
+    "ar": "رَبَّنَا تَقَبَّلْ مِنَّا إِنَّكَ أَنْتَ السَّمِيعُ الْعَلِيمُ",
+    "la": "Rabbanaa taqabbal minnaa innaka antas samii'ul 'aliim",
+    "ti": "Ya Tuhan kami, terimalah amal dari kami, sungguh Engkau Maha Mendengar lagi Maha Mengetahui"
+   },
+   {
+    "ar": "وَتُبْ عَلَيْنَا إِنَّكَ أَنْتَ التَّوَّابُ الرَّحِيمُ",
+    "la": "wa tub 'alainaa innaka antat tawwaabur rahiim",
+    "ti": "Dan terimalah tobat kami, sungguh Engkau Maha Penerima Tobat lagi Maha Penyayang"
+   },
+   {
+    "ar": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
+    "la": "Rabbanaa aatinaa fid-dunyaa hasanah wa fil aakhirati hasanah wa qinaa 'adzaaba an-naar",
+    "ti": "Ya Tuhan kami, berilah kami kebaikan di dunia dan kebaikan di akhirat, dan lindungilah kami dari siksa neraka"
+   },
+   {
+    "ar": "وَالْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+    "la": "Walhamdulillaahi rabbil 'aalamiin",
+    "ti": "Segala puji bagi Allah, Tuhan semesta alam"
+   }
+  ]
+ }
+}

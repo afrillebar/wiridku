@@ -4,7 +4,8 @@ export const SURAH_COUNT = 114;
 export const DEFAULT_QARI = 7;
 
 export type Surah = { id: number; name: string; arabic: string; meaning: string; place: "makkah" | "madinah"; verses: number; bismillah: boolean };
-export type Verse = { n: number; arabic: string; latin: string; arti: string };
+// key: how the listening view labels the verse when it is not "surah:n" (other readings than a surah)
+export type Verse = { n: number; arabic: string; latin: string; arti: string; key?: string };
 export type Qari = { id: number; name: string };
 // timings[i] = [start, end] of verse i + 1 inside the file, in milliseconds
 export type Recitation = { url: string; timings: [number, number][] };

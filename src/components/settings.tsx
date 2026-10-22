@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { LocationPicker, cityKey, clearPrayerData, placeName, pretty, useCity, useSavedMonths } from "./prayer-card";
-import { saveAutoplay, useAutoplay } from "./audio";
 import { installApp, useInstalled, useInstallOffer } from "./install-prompt";
-import { TEXT_DEFAULTS, TEXT_LIMITS, clearDoaPlace, clearPlace, clearProgress, clearQuranPlace, clearShalawatPlace, clearTahlilPlace, useDoaState, useProgressSummary, useQuranPlace, useShalawatState, useTahlilState, useTextPrefs } from "@/lib/progress";
+import { TEXT_DEFAULTS, TEXT_LIMITS, clearProgress, clearQuranPlace, clearReadingPlace, useProgressSummary, useQuranPlace, useQuranPrefs, useReadingPlace, useTextPrefs } from "@/lib/progress";
 import { zoneByOffset, zoneOf } from "@/lib/prayer";
+import { DEFAULT_QARI } from "@/lib/quran-types";
 import { SITE_THEMES, VISITOR_THEME_KEY, type SiteThemeId } from "@/lib/site-theme";
 
 const AUDIO_CACHE = "wiridku-audio";
@@ -435,17 +435,17 @@ export function ReadingSettings() {
 // ---------- Audio ----------
 
 export function AudioSettings() {
-  const auto = useAutoplay();
+  // the same switch as "Lanjut otomatis" in the listening view of every reading
+  const { autoNext, set } = useQuranPrefs(DEFAULT_QARI);
   return (
     <section className="set-card">
       <label className="set-switch">
         <span>
           <strong>Lanjut otomatis</strong>
-          <span>Setelah satu bacaan selesai, putar bacaan berikutnya dan gulir ke kartunya.</span>
+          <span>Setelah satu bacaan selesai, putar bacaan berikutnya.</span>
         </span>
-        <input type="checkbox" role="switch" checked={auto} onChange={(e) => saveAutoplay(e.target.checked)} />
+        <input type="checkbox" role="switch" checked={autoNext} onChange={(e) => set({ autoNext: e.target.checked })} />
       </label>
-      <p className="set-note">Jenis suara (rekaman, suara sintetis, atau YouTube) diatur oleh pengelola situs untuk tiap bacaan.</p>
     </section>
   );
 }
@@ -539,9 +539,9 @@ export function InstallSettings() {
 export function DataSettings() {
   const { done, streak, place } = useProgressSummary();
   const quranPlace = useQuranPlace();
-  const doaPlace = useDoaState().slug;
-  const tahlilPlace = useTahlilState().slug;
-  const shalawatPlace = useShalawatState().slug;
+  const doaPlace = useReadingPlace("doa").slug;
+  const tahlilPlace = useReadingPlace("tahlil").slug;
+  const shalawatPlace = useReadingPlace("shalawat").slug;
   const { city, chosen } = useCity();
   const months = useSavedMonths();
   const { info, refresh } = useOfflineAudio();
@@ -568,7 +568,7 @@ export function DataSettings() {
             <strong>Posisi bacaan terakhir</strong>
             <span>{place ? "Tersimpan" : "Belum ada"}</span>
           </span>
-          <ClearButton label="Hapus" disabled={!place} onClear={clearPlace} />
+          <ClearButton label="Hapus" disabled={!place} onClear={() => clearReadingPlace("wirid")} />
         </li>
         <li>
           <span>
@@ -582,21 +582,21 @@ export function DataSettings() {
             <strong>Doa terakhir didengar</strong>
             <span>{doaPlace ? "Tersimpan" : "Belum ada"}</span>
           </span>
-          <ClearButton label="Hapus" disabled={!doaPlace} onClear={clearDoaPlace} />
+          <ClearButton label="Hapus" disabled={!doaPlace} onClear={() => clearReadingPlace("doa")} />
         </li>
         <li>
           <span>
             <strong>Tahlil terakhir didengar</strong>
             <span>{tahlilPlace ? "Tersimpan" : "Belum ada"}</span>
           </span>
-          <ClearButton label="Hapus" disabled={!tahlilPlace} onClear={clearTahlilPlace} />
+          <ClearButton label="Hapus" disabled={!tahlilPlace} onClear={() => clearReadingPlace("tahlil")} />
         </li>
         <li>
           <span>
             <strong>Shalawat terakhir didengar</strong>
             <span>{shalawatPlace ? "Tersimpan" : "Belum ada"}</span>
           </span>
-          <ClearButton label="Hapus" disabled={!shalawatPlace} onClear={clearShalawatPlace} />
+          <ClearButton label="Hapus" disabled={!shalawatPlace} onClear={() => clearReadingPlace("shalawat")} />
         </li>
         <li>
           <span>

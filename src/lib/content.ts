@@ -1,9 +1,10 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { assignNumbers } from "@/lib/numbering";
-import { DEFAULT_AUDIO_SOURCE, parseAudioSource, resolveAudioSource, type AudioSource } from "@/lib/audio-source";
+import { parseHiddenMenus } from "@/lib/menus";
 import { parseSiteTheme, type SiteThemeId } from "@/lib/site-theme";
 import { PRAYER_CATEGORIES, PRAYER_COLUMNS, type Prayer } from "@/lib/doa";
+import { READING_COLUMNS, type ReadingModuleName, type ReadingRow } from "@/lib/readings";
 
 export type TasbihStep = { arabic: string; transliteration: string; target: number };
 
@@ -15,20 +16,13 @@ export type AudioInfo = {
   offline: boolean;
   reciter: string | null;
   synthetic: boolean;
-  cues: AudioCue[] | null;
 };
-
-// t = second where repetition i of n starts inside the file
-export type AudioCue = { t: number; label: string; i: number; n: number };
 
 export type Recitation = {
   id: string;
   slug: string;
   kind: "standard" | "tasbih";
   show_number: boolean;
-  youtube_id: string | null;
-  youtube_start: number | null;
-  youtube_end: number | null;
   display_number: number | null;
   title: string;
   arabic_text: string | null;
@@ -37,7 +31,6 @@ export type Recitation = {
   chip_label: string | null;
   reference_text: string | null;
   tasbih_config: { steps: TasbihStep[] } | null;
-  source: AudioSource;
   audio: AudioInfo | null;
 };
 
@@ -52,29 +45,21 @@ export type Phase = {
 };
 
 export const RECITATION_COLUMNS =
-  "id, slug, kind, show_number, audio_source, youtube_id, youtube_start, youtube_end, title, arabic_text, transliteration, translation, chip_label, reference_text, tasbih_config, audio_files(storage_path, duration_seconds, audio_version, offline_available, synthetic, cues)";
+  "id, slug, kind, show_number, title, arabic_text, transliteration, translation, chip_label, reference_text, tasbih_config, audio_files(storage_path, duration_seconds, audio_version, offline_available, synthetic)";
 
 // ponytail: longer than any cached page lifetime; the player asks /api/audio-url for a fresh one if it still expires
 export const SIGNED_URL_SECONDS = 60 * 60 * 24;
 
-type RawAudio = { storage_path: string; duration_seconds: number | null; audio_version: number; offline_available: boolean; synthetic: boolean; cues: AudioCue[] | null };
-type RawRecitation = Omit<Recitation, "audio" | "display_number" | "source"> & { audio_source: string | null; audio_files: RawAudio | RawAudio[] | null };
+type RawAudio = { storage_path: string; duration_seconds: number | null; audio_version: number; offline_available: boolean; synthetic: boolean };
+type RawRecitation = Omit<Recitation, "audio" | "display_number"> & { audio_files: RawAudio | RawAudio[] | null };
 export type RawPhase = Omit<Phase, "recitations" | "number"> & { recitations: RawRecitation[] };
 
 // Turns embedded audio_files rows into signed URLs. Storage RLS decides which files the client may sign.
-// Each card uses its own source, or the site-wide choice when audio_source is null. youtube/off return no file.
-export async function withAudioUrls(
-  db: SupabaseClient,
-  phases: RawPhase[],
-  siteSource: AudioSource,
-  counts?: (r: RawRecitation, p: RawPhase) => boolean,
-): Promise<Phase[]> {
-  const chosen = (r: RawRecitation) => resolveAudioSource(r.audio_source, siteSource);
+// A card keeps its own recording when it has one, else the synthetic one; most cards are streamed from online sources and need neither (lib/wirid-audio.json).
+export async function withAudioUrls(db: SupabaseClient, phases: RawPhase[], counts?: (r: RawRecitation, p: RawPhase) => boolean): Promise<Phase[]> {
   const audioOf = (r: RawRecitation) => {
-    const source = chosen(r);
-    if (source !== "mp3" && source !== "tts") return null;
     const rows = Array.isArray(r.audio_files) ? r.audio_files : r.audio_files ? [r.audio_files] : [];
-    return rows.find((a) => a.synthetic === (source === "tts")) ?? null;
+    return rows.find((a) => !a.synthetic) ?? rows[0] ?? null;
   };
   const paths = phases.flatMap((p) => p.recitations.map(audioOf).filter((a): a is RawAudio => !!a).map((a) => a.storage_path));
 
@@ -92,11 +77,9 @@ export async function withAudioUrls(
     recitations: p.recitations.map((raw) => {
       const r: Partial<RawRecitation> = { ...raw };
       delete r.audio_files;
-      delete r.audio_source;
       const a = audioOf(raw);
       return {
-        ...(r as Omit<RawRecitation, "audio_files" | "audio_source">),
-        source: chosen(raw),
+        ...(r as Omit<RawRecitation, "audio_files">),
         display_number: numbers.get(raw) ?? null,
         audio: a
           ? {
@@ -107,7 +90,6 @@ export async function withAudioUrls(
               offline: a.offline_available,
               reciter: null,
               synthetic: a.synthetic,
-              cues: a.cues ?? null,
             }
           : null,
       };
@@ -135,7 +117,7 @@ export async function getPublishedPhases(): Promise<Phase[]> {
     .order("sort_order")
     .order("sort_order", { referencedTable: "recitations" });
   if (error) throw new Error(`Supabase: ${error.message}`);
-  return withAudioUrls(db, data as unknown as RawPhase[], await getAudioSource());
+  return withAudioUrls(db, data as unknown as RawPhase[]);
 }
 
 export async function getSiteTheme(): Promise<SiteThemeId> {
@@ -147,13 +129,14 @@ export async function getSiteTheme(): Promise<SiteThemeId> {
   return parseSiteTheme(data?.value);
 }
 
-export async function getAudioSource(): Promise<AudioSource> {
+// ponytail: kept in the site_theme row, the one setting row the public may read (a new key would need a migration on the live database)
+export async function getHiddenMenus(): Promise<string[]> {
   "use cache";
   cacheLife("minutes");
   cacheTag("content");
 
-  const { data } = await createAnonClient().from("app_settings").select("value").eq("key", "audio_source").maybeSingle();
-  return data ? parseAudioSource(data.value) : DEFAULT_AUDIO_SOURCE;
+  const { data } = await createAnonClient().from("app_settings").select("value").eq("key", "site_theme").maybeSingle();
+  return parseHiddenMenus(data?.value);
 }
 
 export type ListenBackground = { id: string; title: string; url: string; credit: string | null };
@@ -184,4 +167,15 @@ export async function getPublishedPrayers(): Promise<Prayer[]> {
     return i < 0 ? 999 : i;
   };
   return (data as Prayer[]).sort((a, b) => rank(a.category) - rank(b.category));
+}
+
+// Published readings of Tahlil & Yasin or Shalawat, in their order; the anon key and RLS decide what is public
+export async function getReadingRows(module: ReadingModuleName): Promise<ReadingRow[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("content");
+
+  const { data, error } = await createAnonClient().from("readings").select(READING_COLUMNS).eq("module", module).order("sort_order");
+  if (error) throw new Error(`Supabase: ${error.message}`);
+  return data as unknown as ReadingRow[];
 }

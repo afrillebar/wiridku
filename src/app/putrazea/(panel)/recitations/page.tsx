@@ -2,23 +2,21 @@ import Link from "next/link";
 import { Flash } from "@/components/admin/flash";
 import { RecitationGroups, type PhaseInfo, type RecitationRow, type Status } from "@/components/admin/lists";
 import { requireStaff } from "@/lib/auth";
-import { AUDIO_SOURCE_LABEL, parseAudioSource, resolveAudioSource } from "@/lib/audio-source";
+import { wiridAudio } from "@/lib/wirid-audio";
 import { createClient } from "@/lib/supabase/server";
 
 const audioKinds = (v: unknown) => (Array.isArray(v) ? v : v ? [v] : []) as { synthetic: boolean; reciter_name: string | null }[];
 
 export default async function RecitationsPage(props: PageProps<"/putrazea/recitations">) {
   const supabase = await createClient();
-  const [staff, { data: phases }, { data: sourceRow }] = await Promise.all([
+  const [staff, { data: phases }] = await Promise.all([
     requireStaff(),
     supabase
       .from("phases")
-      .select("id, title, is_active, publication_status, continue_numbering, recitations(id, slug, kind, show_number, title, arabic_text, is_active, publication_status, sort_order, audio_source, youtube_id, audio_files(synthetic, reciter_name))")
+      .select("id, title, is_active, publication_status, continue_numbering, recitations(id, slug, kind, show_number, title, arabic_text, is_active, publication_status, sort_order, audio_files(synthetic, reciter_name))")
       .order("sort_order")
       .order("sort_order", { referencedTable: "recitations" }),
-    supabase.from("app_settings").select("value").eq("key", "audio_source").maybeSingle(),
   ]);
-  const source = parseAudioSource(sourceRow?.value);
 
   const info: PhaseInfo[] = (phases ?? []).map((p) => ({
     id: p.id,
@@ -38,11 +36,10 @@ export default async function RecitationsPage(props: PageProps<"/putrazea/recita
       title: r.title,
       kind: r.kind as "standard" | "tasbih",
       show_number: r.show_number,
-      source: resolveAudioSource(r.audio_source, source),
       audio: {
+        online: r.slug in wiridAudio,
         recording: audioKinds(r.audio_files).find((x) => !x.synthetic)?.reciter_name ?? (audioKinds(r.audio_files).some((x) => !x.synthetic) ? "" : null),
         synthetic: audioKinds(r.audio_files).some((x) => x.synthetic),
-        youtube: !!r.youtube_id,
       },
       arabic_empty: !r.arabic_text?.trim(),
     })),
@@ -58,12 +55,7 @@ export default async function RecitationsPage(props: PageProps<"/putrazea/recita
       </div>
       <Flash searchParams={props.searchParams} />
       <p className="muted">
-        Pilihan untuk semua bacaan: <strong>{AUDIO_SOURCE_LABEL[source]}</strong>. Tanda ● adalah sumber yang dipakai kartu itu.{" "}
-        {staff.role === "admin" && (
-          <Link prefetch={false} href="/putrazea/settings">
-            Ubah di Pengaturan
-          </Link>
-        )}
+        Tanda ● adalah suara yang dipakai kartu itu: sumber online lebih dulu, rekaman MP3 atau TTS hanya kalau kartu tidak punya sumber online.
       </p>
       <RecitationGroups phases={info} initial={rows} isAdmin={staff.role === "admin"} />
     </>

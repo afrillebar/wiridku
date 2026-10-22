@@ -14,7 +14,7 @@ export default async function HistoryPage() {
   return (
     <>
       <h1>Riwayat perubahan</h1>
-      <p className="muted">200 aktivitas terakhir.</p>
+      <p className="muted">200 aktivitas terakhir. Yang paling penting saja yang dicatat (terbit, hapus, pengguna, pengaturan), dan yang lebih tua dari 90 hari dihapus sendiri.</p>
       <DataTable
         colSpan={5}
         empty="Belum ada aktivitas."

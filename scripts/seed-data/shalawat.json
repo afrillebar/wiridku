@@ -2,6 +2,7 @@
  {
   "slug": "ibrahimiyah",
   "title": "Shalawat Ibrahimiyah",
+  "arabic": "الصلاة الإبراهيمية",
   "note": "Shalawat yang diajarkan Nabi ﷺ, dibaca juga pada tasyahud akhir salat.",
   "ref": "HR. Bukhari dan Muslim",
   "blocks": [
@@ -31,6 +32,7 @@
  {
   "slug": "ibrahimiyah-ringkas",
   "title": "Shalawat Ibrahimiyah (dengan istri dan keturunan)",
+  "arabic": "الصلاة الإبراهيمية",
   "note": "Riwayat lain dari shalawat Ibrahimiyah.",
   "ref": "HR. Bukhari dan Muslim",
   "blocks": [
@@ -50,6 +52,7 @@
  {
   "slug": "nariyah",
   "title": "Shalawat Nariyah",
+  "arabic": "الصلاة النارية",
   "note": "Disebut juga Shalawat Tafrijiyah atau Tazziyah. Disusun Syekh Ahmad at-Tazi al-Maghribi dari Maroko, menurut Quran NU Online; bukan lafaz dari hadis.",
   "ref": "Quran NU Online",
   "blocks": [
@@ -68,6 +71,7 @@
  {
   "slug": "fatih",
   "title": "Shalawat Fatih",
+  "arabic": "صلاة الفاتح",
   "note": "Menurut kitab Syawariqul Anwar, disusun Sayyid Ahmad at-Tijani; bukan lafaz dari hadis. Sebagian naskah menambah \"wa shahbihi\" setelah \"wa 'alā ālihī\"; rekaman di sini tanpa tambahan itu.",
   "ref": "Quran NU Online",
   "blocks": [
@@ -86,6 +90,7 @@
  {
   "slug": "munjiyat",
   "title": "Shalawat Munjiyat",
+  "arabic": "الصلاة المنجية",
   "note": "Populer di pesantren dan sering mengawali doa. Susunan ulama, bukan lafaz dari hadis.",
   "ref": "Quran NU Online",
   "blocks": [
@@ -104,6 +109,7 @@
  {
   "slug": "thibbil-qulub",
   "title": "Shalawat Thibbil Qulub",
+  "arabic": "صلاة طب القلوب",
   "note": "Disebut juga Shalawat Thibbiyah. Susunan ulama, bukan lafaz dari hadis. Naskah Quran NU Online memakai \"sayyidinā\" saja dan menambah \"wa qūtil-arwāḥi wa ghidzā'ihā\" sebelum \"wa 'alā ālihī\"; rekaman di sini membaca \"sayyidinā wa maulānā\" tanpa tambahan itu.",
   "ref": "Quran NU Online",
   "blocks": [
@@ -122,6 +128,7 @@
  {
   "slug": "saadah",
   "title": "Shalawat Sa'adah",
+  "arabic": "صلاة السعادة",
   "note": "Menurut Quran NU Online dinukil dari kitab Afdhalush Shalat 'ala Sayyidis Sadat karya Syekh Yusuf an-Nabhani; bukan lafaz dari hadis.",
   "ref": "Quran NU Online",
   "blocks": [

@@ -8,8 +8,6 @@ import { requireAdmin, requireStaff } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 import { createClient } from "@/lib/supabase/server";
 import { SLUG_RE, goto, text, textOrNull, type FormState } from "@/lib/form";
-import { isAudioSource } from "@/lib/audio-source";
-import { parseYoutubeId } from "@/lib/youtube";
 
 type Entity = "phase" | "recitation";
 const TABLE = { phase: "phases", recitation: "recitations" } as const;
@@ -101,18 +99,6 @@ export async function saveRecitation(_prev: FormState, fd: FormData): Promise<Fo
   if (!SLUG_RE.test(slug)) return { error: "Slug hanya huruf kecil, angka, dan tanda hubung (mis. f1-1)." };
   if (!title) return { error: "Judul wajib diisi." };
 
-  const ytRaw = text(fd, "youtube_url");
-  const youtubeId = ytRaw ? parseYoutubeId(ytRaw) : null;
-  if (ytRaw && !youtubeId) return { error: "Tautan YouTube tidak dikenali. Tempel alamat video (youtube.com/watch?v=..., youtu.be/..., atau /embed/...)." };
-  const secs = (key: string) => {
-    const raw = text(fd, key);
-    return raw === "" ? null : Number(raw);
-  };
-  const ytStart = secs("youtube_start");
-  const ytEnd = secs("youtube_end");
-  for (const v of [ytStart, ytEnd]) if (v !== null && (!Number.isInteger(v) || v < 0)) return { error: "Detik mulai/selesai YouTube harus bilangan bulat, 0 atau lebih." };
-  if (ytEnd !== null && ytEnd <= (ytStart ?? 0)) return { error: "Detik selesai YouTube harus lebih besar dari detik mulai." };
-
   let tasbihConfig = null;
   if (kind === "tasbih") {
     const parsed = parseTasbih(text(fd, "tasbih_json"));
@@ -120,19 +106,12 @@ export async function saveRecitation(_prev: FormState, fd: FormData): Promise<Fo
     tasbihConfig = parsed;
   }
 
-  const pickedSource = text(fd, "audio_source");
-  if (pickedSource !== "default" && !isAudioSource(pickedSource)) return { error: "Sumber audio tidak valid." };
-
   const supabase = await createClient();
   const values = {
     phase_id: phaseId,
-    audio_source: pickedSource === "default" ? null : pickedSource,
     slug,
     kind,
     show_number: fd.get("show_number") === "on",
-    youtube_id: youtubeId,
-    youtube_start: youtubeId ? ytStart : null,
-    youtube_end: youtubeId ? ytEnd : null,
     title,
     arabic_text: textOrNull(fd, "arabic_text"),
     transliteration: textOrNull(fd, "transliteration"),

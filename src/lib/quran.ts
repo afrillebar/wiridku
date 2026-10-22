@@ -9,16 +9,16 @@ const API = "https://api.quran.com/api";
 const LATIN_API = "https://equran.id/api/v2/surat";
 const TRANSLATION = 33;
 
-// the build fetches all 114 surahs at once, so one dropped connection is retried once before failing
-async function get<T>(path: string, base = API, retry = true): Promise<T> {
+// the build fetches all 114 surahs at once, so a dropped or slow connection is tried again (three more times, a little later each time) before failing
+async function get<T>(path: string, base = API, retries = 3): Promise<T> {
   try {
     const res = await fetch(`${base}${path}`, { signal: AbortSignal.timeout(20000) });
     if (!res.ok) throw new Error(`${base}${path}: ${res.status}`);
     return (await res.json()) as T;
   } catch (e) {
-    if (!retry) throw e;
-    await new Promise((r) => setTimeout(r, 1500));
-    return get<T>(path, base, false);
+    if (retries <= 0) throw e;
+    await new Promise((r) => setTimeout(r, 1500 * (4 - retries)));
+    return get<T>(path, base, retries - 1);
   }
 }
 

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, type ReactNode } from "react";
-import { usePlace, useProgress } from "@/lib/progress";
+import { MENUS } from "@/lib/menus";
+import { useProgress, useReadingPlace } from "@/lib/progress";
 import { PrayerCard } from "./prayer-card";
 
 export type DashboardPhase = { slug: string; title: string; cards: { slug: string; title: string; number: number | null }[] };
@@ -92,35 +93,34 @@ const ICONS = {
   ),
 };
 
-// Only features that exist are links; the others are planned stages and say so instead of linking to an empty page.
-const MENU = [
-  { name: "Wirid Salat", icon: ICONS.book, href: "/wirid-salat" },
-  { name: "Al-Qur'an", icon: ICONS.quran, href: "/alquran" },
-  { name: "Tasbih", icon: ICONS.beads, href: "/tasbih" },
-  { name: "Doa Harian", icon: ICONS.hands, href: "/doa-harian" },
-  { name: "Tahlil & Yasin", icon: ICONS.scroll, href: "/tahlil" },
-  { name: "Shalawat", icon: ICONS.heart, href: "/shalawat" },
-  { name: "Arah Kiblat", icon: ICONS.compass, href: "/arah-kiblat" },
-  { name: "Kalender", icon: ICONS.calendar, href: "/kalender" },
-  { name: "Jadwal Salat", icon: ICONS.mosque, href: "/jadwal-salat" },
-];
+const MENU_ICON: Record<string, ReactNode> = {
+  "/wirid-salat": ICONS.book,
+  "/alquran": ICONS.quran,
+  "/tasbih": ICONS.beads,
+  "/doa-harian": ICONS.hands,
+  "/tahlil": ICONS.scroll,
+  "/shalawat": ICONS.heart,
+  "/arah-kiblat": ICONS.compass,
+  "/kalender": ICONS.calendar,
+  "/jadwal-salat": ICONS.mosque,
+};
 
-export function Dashboard({ phases }: { phases: DashboardPhase[] }) {
+export function Dashboard({ phases, hidden }: { phases: DashboardPhase[]; hidden: string[] }) {
   const ids = useMemo(() => phases.flatMap((p) => p.cards.map((c) => c.slug)), [phases]);
   const { done, streak } = useProgress(ids);
-  const place = usePlace();
+  const place = useReadingPlace("wirid").slug;
 
   useEffect(() => {
     // old links pointed at the reading page on "/", e.g. "/#f1-1"; send them to where the cards live now
     const hash = decodeURIComponent(location.hash.slice(1));
-    if (hash && (ids.includes(hash) || phases.some((p) => p.slug === hash))) location.replace(`/wirid-salat#${hash}`);
+    if (hash && ids.includes(hash)) location.replace(`/wirid-salat/${hash}`);
+    else if (hash && phases.some((p) => p.slug === hash)) location.replace("/wirid-salat");
   }, [ids, phases]);
 
   const finished = ids.filter((id) => done.has(id)).length;
   const total = ids.length;
   const lastCard = phases.flatMap((p) => p.cards).find((c) => c.slug === place);
-  const lastPhase = phases.find((p) => p.slug === place);
-  const resume = lastCard ? `${lastCard.number !== null ? `${lastCard.number}. ` : ""}${lastCard.title}` : lastPhase?.title;
+  const resume = lastCard ? `${lastCard.number !== null ? `${lastCard.number}. ` : ""}${lastCard.title}` : undefined;
 
   const pct = total ? Math.round((finished / total) * 100) : 0;
 
@@ -141,26 +141,14 @@ export function Dashboard({ phases }: { phases: DashboardPhase[] }) {
       <PrayerCard />
 
       <nav className="menu-sheet" aria-label="Fitur">
-        {MENU.map((m) => {
-          const inner = (
-            <>
-              <span className="menu-icon">
-                <Icon size={28}>{m.icon}</Icon>
-              </span>
-              <span className="menu-label">{m.name}</span>
-              {!m.href && <span className="menu-soon">Segera</span>}
-            </>
-          );
-          return m.href ? (
-            <Link key={m.name} href={m.href} className="menu-item">
-              {inner}
-            </Link>
-          ) : (
-            <div key={m.name} className="menu-item off" aria-disabled="true">
-              {inner}
-            </div>
-          );
-        })}
+        {MENUS.filter((m) => !hidden.includes(m.href)).map((m) => (
+          <Link key={m.href} href={m.href} className="menu-item">
+            <span className="menu-icon">
+              <Icon size={28}>{MENU_ICON[m.href]}</Icon>
+            </span>
+            <span className="menu-label">{m.name}</span>
+          </Link>
+        ))}
       </nav>
 
       <section className="today" aria-labelledby="today-title">
@@ -183,7 +171,7 @@ export function Dashboard({ phases }: { phases: DashboardPhase[] }) {
           ))}
         </div>
         {resume && <p className="today-last">Terakhir dibaca: {resume}</p>}
-        <Link className="today-btn" href={place ? `/wirid-salat#${place}` : "/wirid-salat"}>
+        <Link className="today-btn" href={lastCard ? `/wirid-salat/${lastCard.slug}` : "/wirid-salat"}>
           {resume ? "Lanjutkan Wirid" : "Mulai Wirid"}
         </Link>
       </section>

@@ -1,19 +1,24 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { Suspense, useEffect, type ReactNode } from "react";
 import { InstallPrompt } from "./install-prompt";
 import { track } from "@/lib/track";
 
 // Public pages share this frame: the offline worker, page-view tracking and the install prompt.
 // Navigation is hub-and-spoke: the home page links to each feature, each feature page links back home.
-export function SiteShell({ children }: { children: ReactNode }) {
+// ponytail: inside Suspense so a page that was not prerendered (a reading published after the build) is not blocked on the pathname
+function PageViews() {
   const pathname = usePathname();
 
   useEffect(() => {
     track("view");
   }, [pathname]);
 
+  return null;
+}
+
+export function SiteShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     // ponytail: production only, a dev-mode worker would serve stale hot-reload bundles
     if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) return;
@@ -29,6 +34,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
   return (
     <>
+      <Suspense>
+        <PageViews />
+      </Suspense>
       {children}
       <InstallPrompt />
     </>

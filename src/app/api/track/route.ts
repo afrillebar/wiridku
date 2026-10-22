@@ -5,7 +5,7 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 const EVENTS = new Set(["view", "play", "complete", "place"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const BOT = /bot|crawl|spider|slurp|preview|headless|lighthouse|monitor|curl|wget/i;
-const KEEP_DAYS = 180;
+const KEEP_DAYS = 60;
 
 const clip = (v: string | null | undefined, n: number) => (v ? v.slice(0, n) : null);
 // ponytail: Vercel sends geo headers URL-encoded (e.g. "Jakarta%20Selatan")

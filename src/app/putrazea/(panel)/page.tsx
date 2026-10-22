@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Flash } from "@/components/admin/flash";
 import { requireStaff } from "@/lib/auth";
-import { parseAudioSource, resolveAudioSource } from "@/lib/audio-source";
+import { wiridAudio } from "@/lib/wirid-audio";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function Dashboard(props: PageProps<"/putrazea">) {
@@ -12,7 +12,7 @@ export default async function Dashboard(props: PageProps<"/putrazea">) {
   const weekAgo = daysAgo(7);
   const visits = (event: "view" | "play") =>
     staffP.then((st) => (st.role === "admin" ? supabase.from("visit_events").select("*", { count: "exact", head: true }).eq("event", event).gte("created_at", weekAgo) : null));
-  const [phasesLive, recLive, drafts, inactive, archived, users, hidden, logs, audio, sourceRow, views, plays] = await Promise.all([
+  const [phasesLive, recLive, drafts, inactive, archived, users, hidden, logs, audio, views, plays] = await Promise.all([
     head("phases").eq("publication_status", "published").eq("is_active", true),
     head("recitations").eq("publication_status", "published").eq("is_active", true),
     head("recitations").eq("publication_status", "draft"),
@@ -21,25 +21,16 @@ export default async function Dashboard(props: PageProps<"/putrazea">) {
     staffP.then((st) => (st.role === "admin" ? head("profiles").eq("is_active", true) : null)),
     supabase
       .from("recitations")
-      .select("slug, title, audio_source, phases!inner(title, publication_status, is_active), youtube_id, audio_files(id, synthetic)")
+      .select("slug, title, phases!inner(title, publication_status, is_active), audio_files(id)")
       .eq("publication_status", "published")
       .eq("is_active", true),
     supabase.from("audit_logs").select("id, entity_type, action, summary, created_at").order("created_at", { ascending: false }).limit(8),
     supabase.from("audio_files").select("file_size_bytes"),
-    supabase.from("app_settings").select("value").eq("key", "audio_source").maybeSingle(),
     visits("view"),
     visits("play"),
   ]);
-  const source = parseAudioSource(sourceRow.data?.value);
   const staff = await staffP;
-  const hasSource = (r: { audio_source: string | null; youtube_id: string | null; audio_files: unknown }) => {
-    const chosen = resolveAudioSource(r.audio_source, source);
-    const kinds = (Array.isArray(r.audio_files) ? r.audio_files : r.audio_files ? [r.audio_files] : []) as { synthetic: boolean }[];
-    if (chosen === "mp3") return kinds.some((k) => !k.synthetic);
-    if (chosen === "tts") return kinds.some((k) => k.synthetic);
-    if (chosen === "youtube") return !!r.youtube_id;
-    return true;
-  };
+  const hasSource = (r: { slug: string; audio_files: unknown }) => r.slug in wiridAudio || (Array.isArray(r.audio_files) ? r.audio_files.length > 0 : !!r.audio_files);
   const withoutAudio = (hidden.data ?? []).filter((r) => !hasSource(r as never)).length;
   const audioBytes = (audio.data ?? []).reduce((sum, f) => sum + Number(f.file_size_bytes), 0);
 
@@ -62,7 +53,7 @@ export default async function Dashboard(props: PageProps<"/putrazea">) {
         <Stat label="Bacaan nonaktif" value={inactive.count ?? 0} href="/putrazea/recitations" />
         <Stat label="Bacaan diarsipkan" value={archived.count ?? 0} href="/putrazea/recitations" />
         {users !== null && <Stat label="Pengguna aktif" value={users.count ?? 0} href="/putrazea/users" />}
-        <Stat label="Terbit tanpa audio sesuai pilihannya" value={withoutAudio} href="/putrazea/recitations" />
+        <Stat label="Terbit tanpa audio" value={withoutAudio} href="/putrazea/recitations" />
         <Stat label={`File audio (${(audioBytes / 1024 / 1024).toFixed(1)} MB)`} value={audio.data?.length ?? 0} href={staff.role === "admin" ? "/putrazea/settings" : "/putrazea/recitations"} />
       </div>
 

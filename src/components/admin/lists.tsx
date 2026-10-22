@@ -5,7 +5,6 @@ import Link from "next/link";
 import { moveRows, remove, setStatus, toggleActive, type RowResult } from "@/actions/content";
 import { DataTable } from "@/components/admin/data-table";
 import { assignNumbers } from "@/lib/numbering";
-import type { AudioSource } from "@/lib/audio-source";
 
 export type Status = "draft" | "published" | "archived";
 const STATUS_LABEL: Record<Status, string> = { draft: "Draft", published: "Terbit", archived: "Arsip" };
@@ -185,30 +184,29 @@ export function PhaseTable({ initial, isAdmin }: { initial: PhaseRow[]; isAdmin:
 
 // ---------- recitations ----------
 
-export type AudioKinds = { recording: string | null; synthetic: boolean; youtube: boolean };
-export type RecitationRow = Base & { slug: string; title: string; kind: "standard" | "tasbih"; show_number: boolean; source: AudioSource; audio: AudioKinds; arabic_empty: boolean };
+export type AudioKinds = { online: boolean; recording: string | null; synthetic: boolean };
+export type RecitationRow = Base & { slug: string; title: string; kind: "standard" | "tasbih"; show_number: boolean; audio: AudioKinds; arabic_empty: boolean };
 export type PhaseInfo = { id: string; title: string; status: Status; active: boolean; continue_numbering: boolean };
 
-// recording holds the reciter name ("" when unnamed), null when the card has no recording
-export function SourceBadges({ audio, source }: { audio: AudioKinds; source: AudioSource }) {
-  const items: [AudioSource, string, boolean, string?][] = [
+// online: streamed from an online source and used first; recording holds the reciter name ("" when unnamed), null when the card has none; the recording or the synthetic one only plays when there is no online source
+export function SourceBadges({ audio }: { audio: AudioKinds }) {
+  const items: [string, string, boolean, string?][] = [
+    ["online", "Online", audio.online],
     ["mp3", "MP3", audio.recording !== null, audio.recording || undefined],
-    ["tts", "TTS", audio.synthetic],
-    ["youtube", "YouTube", audio.youtube],
+    ["tts", "TTS", audio.synthetic && audio.recording === null],
   ];
-  const any = items.some(([, , has]) => has);
+  const used = items.find(([, , has]) => has)?.[0];
   return (
     <span className="src-badges">
       {items.map(([kind, label, has, title]) =>
         has ? (
-          <span key={kind} className={`src-badge${kind === source ? " on" : ""}`} title={title ?? (kind === source ? "Dipakai pengunjung" : undefined)}>
-            {kind === source && "● "}
+          <span key={kind} className={`src-badge${kind === used ? " on" : ""}`} title={title ?? (kind === used ? "Dipakai pengunjung" : undefined)}>
+            {kind === used && "● "}
             {label}
           </span>
         ) : null,
       )}
-      {!any && <span className="muted">tanpa audio</span>}
-      {source !== "off" && any && !items.some(([kind, , has]) => has && kind === source) && <span className="warn-text">tidak bersuara di situs</span>}
+      {!used && <span className="muted">tanpa audio</span>}
     </span>
   );
 }
@@ -263,7 +261,7 @@ export function RecitationGroups({ phases, initial, isAdmin }: { phases: PhaseIn
                     </td>
                     <td data-label="Aktif">{r.active ? "Ya" : "Tidak"}</td>
                     <td data-label="Audio">
-                      <SourceBadges audio={r.audio} source={r.source} />
+                      <SourceBadges audio={r.audio} />
                     </td>
                     <td className="wide">
                       <Actions r={r} api={api} isAdmin={isAdmin} editHref={`/putrazea/recitations/${r.id}`} confirmRemove="Hapus bacaan ini permanen? Audionya ikut terhapus dari database." />
