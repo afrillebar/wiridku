@@ -156,18 +156,17 @@
     "to": 1000.65
    }
   ],
-  "lines": [
-   {
-    "ar": "رَبِّ ارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا",
-    "la": "Rabbirhamhumaa kamaa rabbayaanii shaghiiraa",
-    "ti": "Ya Tuhanku, sayangilah keduanya sebagaimana mereka berdua telah mendidik dan merawatku di waktu kecil"
-   },
-   {
-    "ar": "رَبَّنَا اغْفِرْ لِي وَلِوَالِدَيَّ وَلِلْمُؤْمِنِينَ يَوْمَ يَقُومُ الْحِسَابُ",
-    "la": "Rabbanaghfir lii wa liwaalidayya wa lil mu'miniina yauma yaquumul hisaab",
-    "ti": "Ya Tuhan kami, ampunilah aku, kedua orang tuaku, dan orang-orang mukmin pada hari perhitungan"
-   }
-  ]
+  "cuts": {
+   "ar": [
+    "رَبَّنَا اغْفِرْ"
+   ],
+   "la": [
+    "Rabbanaghfir"
+   ],
+   "ti": [
+    "Ya Tuhan kami, ampunilah"
+   ]
+  }
  },
  "f3-3": {
   "clips": [
@@ -182,18 +181,17 @@
     "to": 316.47
    }
   ],
-  "lines": [
-   {
-    "ar": "رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا وَهَبْ لَنَا مِنْ لَدُنْكَ رَحْمَةً إِنَّكَ أَنْتَ الْوَهَّابُ",
-    "la": "Rabbanaa laa tuzigh quluubanaa ba'da idz hadaitanaa wa hab lanaa min ladunka rahmah, innaka antal wahhaab",
-    "ti": "Ya Tuhan kami, janganlah Engkau condongkan hati kami kepada kesesatan setelah Engkau beri petunjuk, dan karuniakanlah kami rahmat dari sisi-Mu, sungguh Engkau Maha Pemberi"
-   },
-   {
-    "ar": "رَبَّنَا اغْفِرْ لَنَا وَلِإِخْوَانِنَا الَّذِينَ سَبَقُونَا بِالْإِيمَانِ وَلَا تَجْعَلْ فِي قُلُوبِنَا غِلًّا لِلَّذِينَ آمَنُوا رَبَّنَا إِنَّكَ رَءُوفٌ رَحِيمٌ",
-    "la": "Rabbanaghfir lanaa wa li-ikhwaaninal ladziina sabaquunaa bil iimaan, wa laa taj'al fii quluubinaa ghillal lilladziina aamanuu, rabbanaa innaka ra'uufur rahiim",
-    "ti": "Dan ampunilah kami serta saudara-saudara kami yang beriman lebih dulu, dan jangan tanamkan kedengkian dalam hati kami terhadap orang beriman. Sungguh Engkau Maha Penyantun lagi Maha Penyayang"
-   }
-  ]
+  "cuts": {
+   "ar": [
+    "رَبَّنَا اغْفِرْ"
+   ],
+   "la": [
+    "Rabbanaghfir"
+   ],
+   "ti": [
+    "Dan ampunilah"
+   ]
+  }
  },
  "f3-4": {
   "clips": [
@@ -236,27 +234,22 @@
     "to": 1449.38
    }
   ],
-  "lines": [
-   {
-    "ar": "رَبَّنَا تَقَبَّلْ مِنَّا إِنَّكَ أَنْتَ السَّمِيعُ الْعَلِيمُ",
-    "la": "Rabbanaa taqabbal minnaa innaka antas samii'ul 'aliim",
-    "ti": "Ya Tuhan kami, terimalah amal dari kami, sungguh Engkau Maha Mendengar lagi Maha Mengetahui"
-   },
-   {
-    "ar": "وَتُبْ عَلَيْنَا إِنَّكَ أَنْتَ التَّوَّابُ الرَّحِيمُ",
-    "la": "wa tub 'alainaa innaka antat tawwaabur rahiim",
-    "ti": "Dan terimalah tobat kami, sungguh Engkau Maha Penerima Tobat lagi Maha Penyayang"
-   },
-   {
-    "ar": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
-    "la": "Rabbanaa aatinaa fid-dunyaa hasanah wa fil aakhirati hasanah wa qinaa 'adzaaba an-naar",
-    "ti": "Ya Tuhan kami, berilah kami kebaikan di dunia dan kebaikan di akhirat, dan lindungilah kami dari siksa neraka"
-   },
-   {
-    "ar": "وَالْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
-    "la": "Walhamdulillaahi rabbil 'aalamiin",
-    "ti": "Segala puji bagi Allah, Tuhan semesta alam"
-   }
-  ]
+  "cuts": {
+   "ar": [
+    "وَتُبْ",
+    "رَبَّنَا آتِنَا",
+    "وَالْحَمْدُ"
+   ],
+   "la": [
+    "wa tub",
+    "Rabbanaa aatinaa",
+    "Walhamdulillaahi"
+   ],
+   "ti": [
+    "Dan terimalah",
+    "Ya Tuhan kami, berilah",
+    "Segala puji"
+   ]
+  }
  }
 }

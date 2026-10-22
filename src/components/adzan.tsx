@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { adzanUrl, claimAdzan, claimNotificationAsk, useAdzanPrefs, type AdzanPrefs } from "@/lib/adzan";
 import { PRAYERS, type PrayerKey } from "@/lib/prayer";
 import { placeName, usePrayerTimes } from "./prayer-card";
@@ -9,7 +9,26 @@ import { placeName, usePrayerTimes } from "./prayer-card";
 // the adzan sounds for this long after its minute starts, so a page that was asleep for a moment still gets it
 const WINDOW_MIN = 2;
 const toMinutes = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3));
-const SILENCE = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAABErAAABAAgAZGF0YQAAAAA=";
+// a tenth of a second of silence (8-bit mono WAV); an empty file may be refused, and then the tap would unlock nothing
+const silence = () => {
+  const n = 800;
+  const b = new Uint8Array(44 + n).fill(0x80);
+  const w = (at: number, text: string) => [...text].forEach((c, i) => (b[at + i] = c.charCodeAt(0)));
+  const v = new DataView(b.buffer);
+  w(0, "RIFF");
+  v.setUint32(4, 36 + n, true);
+  w(8, "WAVEfmt ");
+  v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true);
+  v.setUint16(22, 1, true);
+  v.setUint32(24, 8000, true);
+  v.setUint32(28, 8000, true);
+  v.setUint16(32, 1, true);
+  v.setUint16(34, 8, true);
+  w(36, "data");
+  v.setUint32(40, n, true);
+  return `data:audio/wav;base64,${btoa(String.fromCharCode(...b))}`;
+};
 
 // ---------- the one player and what it is doing, outside React so a tap and a timer can both reach it ----------
 
@@ -42,7 +61,7 @@ function getPlayer() {
 export function unlockAdzan() {
   const a = getPlayer();
   if (current) return;
-  a.src = SILENCE;
+  a.src = silence();
   a.muted = true;
   a.play().then(
     () => {
@@ -120,13 +139,18 @@ function AdzanRunner({ prefs }: { prefs: AdzanPrefs }) {
   const date = `${t.y}-${t.m}-${t.d}`;
   const place = city ? placeName(city) : "";
   const { sound, notify, prayers } = prefs;
+  const seen = useRef<{ date: string; minute: number } | null>(null);
 
   useEffect(() => {
     if (!now || !day || !(sound || notify)) return;
+    const before = seen.current?.date === date ? seen.current.minute : null;
+    seen.current = { date, minute };
     for (const p of PRAYERS) {
       if (!prayers[p.key]) continue;
       const at = toMinutes(day[p.key]);
-      if (minute < at || minute >= at + WINDOW_MIN || !claimAdzan(`${date}-${p.key}`)) continue;
+      // a page opened after the time stays quiet; one that was running before it and was only paused (a sleeping tab) still catches up
+      const due = minute === at || (before !== null && before < at && minute > at && minute < at + WINDOW_MIN);
+      if (!due || !claimAdzan(`${date}-${p.key}`)) continue;
       if (sound) playAdzan(p.key, p.label);
       if (notify) void notifyAdzan(p.label, place);
     }
@@ -217,7 +241,7 @@ export function AdzanSettings() {
             checked={a.on}
             onChange={(e) => {
               a.set({ on: e.target.checked });
-              if (e.target.checked) void enableAdzan(a).then(askAndRemember);
+              if (e.target.checked) void enableAdzan(a).then(() => (a.notify ? askAndRemember() : undefined));
             }}
           />
         </label>

@@ -1,7 +1,7 @@
 import type { Phase, Recitation } from "@/lib/content";
 import { alignedLines, clipLines, voiceOf, type ReadLine, type Reading } from "@/lib/reading";
 import { splitSurahParts } from "@/lib/surah-parts";
-import { wiridAudio } from "@/lib/wirid-audio";
+import { splitAt, wiridAudio } from "@/lib/wirid-audio";
 
 // the name in Arabic of each card, shown on the right of the list and of the header
 const ARABIC: Record<string, string> = {
@@ -28,9 +28,6 @@ const ARABIC: Record<string, string> = {
   "f3-8": "اللهم عافني في بدني",
 };
 
-const MARKS = /[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed\u0640]/g;
-const skeleton = (s: string) => s.replace(MARKS, "").replace(/[^\u0621-\u064a]/g, "");
-
 // One card of Wirid Salat as a reading. A card that opens each surah with bismillah is read as one line per surah, named; otherwise as the lines it is written in.
 function lines(r: Recitation): ReadLine[] {
   const parts = splitSurahParts(r);
@@ -44,8 +41,15 @@ export function wiridReadings(phases: Phase[]): Reading[] {
       const showReference = r.reference_text && r.reference_text !== r.chip_label;
       let own = lines(r);
       const online = wiridAudio[r.slug];
-      // a card made of sentences from several places is read one sentence at a time, the same text cut at the sentences
-      if (online?.lines && skeleton(online.lines.map((l) => l.ar).join("")) === skeleton(r.arabic_text ?? "")) own = online.lines.map((l, i) => ({ n: String(i + 1), ar: l.ar, la: l.la, ti: l.ti }));
+      // a card made of sentences from several places is read one sentence at a time: its own text, cut where the sound was cut
+      if (online?.cuts) {
+        const ar = splitAt(r.arabic_text, online.cuts.ar);
+        if (ar) {
+          const la = splitAt(r.transliteration, online.cuts.la);
+          const ti = splitAt(r.translation, online.cuts.ti);
+          own = ar.map((a, i) => ({ n: String(i + 1), ar: a, la: la?.length === ar.length ? la[i] : null, ti: ti?.length === ar.length ? ti[i] : null }));
+        }
+      }
       // ponytail: the online sound was cut for the text the card had; once the text is edited so its lines no longer match, the card falls back to its own recording
       const streamed = online && clipLines(online.clips) === own.length ? online.clips : null;
       const clips = streamed ?? (r.audio ? [{ url: r.audio.url ?? "" }] : []);
