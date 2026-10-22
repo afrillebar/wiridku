@@ -3141,6 +3141,107 @@ button.set-row {
   font-size: 0.82rem;
   font-weight: 700;
 }
+.lgoal {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px 12px;
+  box-sizing: border-box;
+  width: calc(100% - 32px);
+  margin: 14px 16px 0;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.lgoal.met {
+  border-color: var(--cal-puasa);
+  background: var(--cal-sel-bg);
+}
+.lgoal.compact {
+  margin: 0 16px 10px;
+  padding: 10px 14px;
+}
+.lgoal-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.lgoal-text small {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.lgoal-text strong {
+  font-size: 1rem;
+}
+.lgoal-bar {
+  grid-column: 1 / -1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--paper-alt);
+  overflow: hidden;
+}
+.lgoal-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--sage-dark);
+  transition: width 0.3s;
+}
+.lgoal-week {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+.lgoal-week > span {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.lgoal-week > span > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper-alt);
+  color: var(--on-sage);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.lgoal-week > span.hit > span {
+  border-color: var(--sage-dark);
+  background: var(--sage-dark);
+}
+.lgoal-week > span.now > span {
+  box-shadow: 0 0 0 2px var(--cal-puasa);
+}
+.lgoal-week small {
+  font-size: 0.68rem;
+  color: var(--text-soft);
+}
+.lgoal-hint {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+}
+.lgoal-opts {
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+  padding: 0;
+}
 .qrn-list {
   margin: 12px 12px 0;
   padding: 0;

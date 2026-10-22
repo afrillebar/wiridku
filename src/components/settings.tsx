@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { LocationPicker, cityKey, clearPrayerData, placeName, pretty, useCity, useSavedMonths } from "./prayer-card";
 import { installApp, useInstalled, useInstallOffer } from "./install-prompt";
-import { TEXT_DEFAULTS, TEXT_LIMITS, clearProgress, clearQuranPlace, clearReadingPlace, useProgressSummary, useQuranPlace, useQuranPrefs, useReadingPlace, useTextPrefs } from "@/lib/progress";
+import { TEXT_DEFAULTS, TEXT_LIMITS, clearListenLog, clearProgress, clearQuranPlace, clearReadingPlace, useListenGoal, useProgressSummary, useQuranPlace, useQuranPrefs, useReadingPlace, useTextPrefs } from "@/lib/progress";
 import { zoneByOffset, zoneOf } from "@/lib/prayer";
 import { DEFAULT_QARI } from "@/lib/quran-types";
 import { SITE_THEMES, VISITOR_THEME_KEY, type SiteThemeId } from "@/lib/site-theme";
@@ -539,6 +539,7 @@ export function InstallSettings() {
 export function DataSettings() {
   const { done, streak, place } = useProgressSummary();
   const quranPlace = useQuranPlace();
+  const listen = useListenGoal();
   const doaPlace = useReadingPlace("doa").slug;
   const tahlilPlace = useReadingPlace("tahlil").slug;
   const shalawatPlace = useReadingPlace("shalawat").slug;
@@ -576,6 +577,15 @@ export function DataSettings() {
             <span>{quranPlace ? `Surah ke-${quranPlace.surah}, ayat ${quranPlace.ayah}` : "Belum ada"}</span>
           </span>
           <ClearButton label="Hapus" disabled={!quranPlace} onClear={clearQuranPlace} />
+        </li>
+        <li>
+          <span>
+            <strong>Menit dengar Al-Qur&apos;an dan streak</strong>
+            <span>
+              {Math.floor(listen.sec / 60)} menit hari ini · beruntun {listen.streak} hari
+            </span>
+          </span>
+          <ClearButton label="Hapus" disabled={!listen.sec && !listen.streak} onClear={clearListenLog} />
         </li>
         <li>
           <span>
