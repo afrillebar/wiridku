@@ -100,7 +100,17 @@ const subscribeClock = (cb: () => void) => {
 const nowSeconds = () => Math.floor((Date.now() + offsetMs) / 1000);
 
 // Fetches one month for the city, stores it, and corrects the clock from the server time in the reply.
-async function loadMonth(city: City, key: string, y: number, m: number) {
+const loading = new Map<string, Promise<void>>();
+function loadMonth(city: City, key: string, y: number, m: number) {
+  // ponytail: the card and the adzan ask for the same month at the same time
+  let p = loading.get(key);
+  if (!p) {
+    p = fetchMonth(city, key, y, m).finally(() => loading.delete(key));
+    loading.set(key, p);
+  }
+  return p;
+}
+async function fetchMonth(city: City, key: string, y: number, m: number) {
   const sent = Date.now();
   const r = await fetch(`/api/jadwal?kota=${city.id}&tahun=${y}&bulan=${m}`);
   const body = await r.json();
@@ -394,17 +404,12 @@ function HttpsHint() {
 
 // ---------- the green card ----------
 
-export function PrayerCard() {
+// Today's and tomorrow's times for the chosen place, kept loaded and ticking each second; shared by the card and the adzan.
+export function usePrayerTimes() {
   const { city, setCity } = useCity();
-  useAskLocation();
   const store = useSyncExternalStore(subscribeStore, readMonths, () => NO_MONTHS as Record<string, MonthSchedule>);
   const now = useSyncExternalStore(subscribeClock, nowSeconds, () => 0);
   const [failed, setFailed] = useState<string | null>(null);
-  const [changing, setChanging] = useState(false);
-
-  // ponytail: Next keeps the page mounted but hidden after navigating away; close the sheet so it is not open on return
-  useLayoutEffect(() => () => setChanging(false), []);
-
   const zone = city?.gps ? zoneByOffset(city.gps.tz) : zoneOf(city?.daerah ?? "");
   const t = zoned(now, zone);
   const tm = zoned(now + 86400, zone);
@@ -433,6 +438,24 @@ export function PrayerCard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [city?.id, thisKey, needNext, !!now, store]);
 
+  // a GPS place has no table to look up: its times are calculated for the day shown
+  const gps = city?.gps;
+  const gpsDay = gps && now ? computeDay(t.y, t.m, t.d, gps) : undefined;
+  const gpsTomorrow = gps && now ? computeDay(tm.y, tm.m, tm.d, gps) : undefined;
+
+  const day: DayTimes | undefined = city?.gps ? gpsDay : month?.jadwal.find((j) => j.date === today);
+  const tomorrowDay: DayTimes | undefined = city?.gps ? gpsTomorrow : (store[needNext ? nextKey : thisKey] ?? month)?.jadwal.find((j) => j.date === tomorrow);
+  return { city, setCity, now, zone, t, day, tomorrowDay, failed };
+}
+
+export function PrayerCard() {
+  const { city, setCity, now, zone, t, day, tomorrowDay, failed } = usePrayerTimes();
+  useAskLocation();
+  const [changing, setChanging] = useState(false);
+
+  // ponytail: Next keeps the page mounted but hidden after navigating away; close the sheet so it is not open on return
+  useLayoutEffect(() => () => setChanging(false), []);
+
   // the area name may have been missing at detection time (no connection); try again quietly
   const gpsLat = city?.gps?.lat;
   const gpsLon = city?.gps?.lon;
@@ -447,13 +470,6 @@ export function PrayerCard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unnamed, gpsLat, gpsLon]);
 
-  // a GPS place has no table to look up: its times are calculated for the day shown
-  const gps = city?.gps;
-  const gpsDay = gps && now ? computeDay(t.y, t.m, t.d, gps) : undefined;
-  const gpsTomorrow = gps && now ? computeDay(tm.y, tm.m, tm.d, gps) : undefined;
-
-  const day: DayTimes | undefined = city?.gps ? gpsDay : month?.jadwal.find((j) => j.date === today);
-  const tomorrowDay: DayTimes | undefined = city?.gps ? gpsTomorrow : (store[needNext ? nextKey : thisKey] ?? month)?.jadwal.find((j) => j.date === tomorrow);
   const nowMin = t.h * 60 + t.min + t.s / 60;
   const idx = day ? PRAYERS.findIndex((p) => toMinutes(day[p.key]) > nowMin) : -1;
   const next = day

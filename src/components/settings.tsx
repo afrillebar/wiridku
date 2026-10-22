@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { LocationPicker, cityKey, clearPrayerData, placeName, pretty, useCity, useSavedMonths } from "./prayer-card";
+import { clearAdzan, useAdzanPrefs } from "@/lib/adzan";
 import { installApp, useInstalled, useInstallOffer } from "./install-prompt";
 import { TEXT_DEFAULTS, TEXT_LIMITS, clearProgress, clearQuranPlace, clearReadingPlace, useProgressSummary, useQuranPlace, useQuranPrefs, useReadingPlace, useTextPrefs } from "@/lib/progress";
 import { zoneByOffset, zoneOf } from "@/lib/prayer";
@@ -42,6 +43,7 @@ const MENU = [
   { href: "/pengaturan/tampilan", title: "Tampilan", hint: "Tema warna dan bahasa", icon: <><path d="M12 3a9 9 0 1 0 0 18c1 0 1.6-.8 1.6-1.6 0-.5-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5C21 6.6 17 3 12 3z" /><circle cx="7.5" cy="11" r="1" fill="currentColor" /><circle cx="10" cy="7" r="1" fill="currentColor" /><circle cx="14.5" cy="7" r="1" fill="currentColor" /></> },
   { href: "/pengaturan/bacaan", title: "Tampilan Bacaan", hint: "Latin, terjemahan, dan ukuran huruf", icon: <><path d="M3 5.5c2.5-1 5.5-1 8 .5v13c-2.5-1.5-5.5-1.5-8-.5z" /><path d="M21 5.5c-2.5-1-5.5-1-8 .5v13c2.5-1.5 5.5-1.5 8-.5z" /></> },
   { href: "/pengaturan/audio", title: "Audio", hint: "Pemutaran suara bacaan", icon: <><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" /><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" /></> },
+  { href: "/pengaturan/adzan", title: "Adzan & Notifikasi", hint: "Adzan saat waktu salat masuk", icon: <><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15z" /><path d="M10 21a2 2 0 0 0 4 0" /></> },
   { href: "/pengaturan/pasang", title: "Pasang Aplikasi", hint: "Taruh Wiridku di layar utama", icon: <><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5" /><path d="M5 19h14" /></> },
   { href: "/pengaturan/data", title: "Penyimpanan Data", hint: "Progres, jadwal, dan audio tersimpan", icon: <><ellipse cx="12" cy="6" rx="7" ry="3" /><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" /></> },
   { dialog: "data", title: "Informasi Data", hint: "Sumber teks, jadwal, kalender, dan audio", icon: <><path d="M7 3h7l5 5v13H7z" /><path d="M14 3v5h5M10 13h6M10 17h6" /></> },
@@ -61,6 +63,7 @@ export const SOURCES = [
   ["Audio", "Rekaman dari sumber terbuka. Bacaan yang memakai suara sintetis diberi tanda."],
   ["Tahlil & Yasin", "Ayat Al-Qur'an, terjemah Kementerian Agama RI, dan murotal Mishary Alafasy dari Quran.com; dzikir dan doa dari Hisnul Muslim (hisnmuslim.com), yang tidak menyebut nama pembacanya. Audio diputar langsung dari sumbernya dan butuh internet. Urutan bacaan mengikuti susunan umum di Indonesia dan bisa berbeda antar daerah."],
   ["Shalawat", "Shalawat Ibrahimiyah dari Hisnul Muslim (hisnmuslim.com); shalawat lainnya dirujuk ke Quran NU Online (quran.nu.or.id) dan disusun para ulama, bukan lafaz dari hadis. Audio diputar langsung dari Hisnul Muslim dan Internet Archive (archive.org), yang pembacanya tidak disebut, dan butuh internet."],
+  ["Adzan", "Rekaman adzan Mishary Rashid Alafasy dari Internet Archive (archive.org), diunggah pengguna tanpa keterangan lisensi. Diputar langsung dari sumbernya saat waktu salat masuk, jadi butuh internet; waktu salat mengikuti jadwal Kemenag RI."],
   ["Audio Doa Harian", "Diputar langsung dari Hisnul Muslim (hisnmuslim.com), yang tidak menyebut nama pembacanya, dan untuk doa dari Al-Qur'an dari bacaan Mishary Alafasy di Quran.com. Tidak diunduh ke Wiridku, jadi butuh internet."],
 ] as const;
 
@@ -434,6 +437,8 @@ export function ReadingSettings() {
 
 // ---------- Audio ----------
 
+export { AdzanSettings } from "./adzan";
+
 export function AudioSettings() {
   // the same switch as "Lanjut otomatis" in the listening view of every reading
   const { autoNext, set } = useQuranPrefs(DEFAULT_QARI);
@@ -545,6 +550,7 @@ export function DataSettings() {
   const { city, chosen } = useCity();
   const months = useSavedMonths();
   const { info, refresh } = useOfflineAudio();
+  const adzan = useAdzanPrefs();
   const mb = info ? (info.bytes / 1024 / 1024).toFixed(1) : "…";
 
   const clearAudio = async () => {
@@ -608,6 +614,13 @@ export function DataSettings() {
             </span>
           </span>
           <ClearButton label="Hapus" disabled={!chosen && !months} onClear={clearPrayerData} />
+        </li>
+        <li>
+          <span>
+            <strong>Pengaturan adzan</strong>
+            <span>{adzan.on ? "Aktif" : "Mati"}</span>
+          </span>
+          <ClearButton label="Hapus" disabled={!adzan.on} onClear={clearAdzan} />
         </li>
         <li>
           <span>

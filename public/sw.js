@@ -1,5 +1,5 @@
 // Wiridku service worker. Bump VERSION when the caching rules below change.
-const VERSION = "wiridku-v13";
+const VERSION = "wiridku-v14";
 const PRECACHE = ["/", "/wirid-salat", "/kalender", "/jadwal-salat", "/tasbih", "/arah-kiblat", "/doa-harian", "/tahlil", "/shalawat", "/alquran", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/favicon.png", "/apple-touch-icon.png"];
 
 self.addEventListener("install", (event) => {
@@ -69,4 +69,16 @@ self.addEventListener("fetch", (event) => {
     // hashed build assets never change under the same URL, so cache-first is safe
     event.respondWith(caches.match(req).then((hit) => hit || fetch(req).then((res) => put(req, res))));
   }
+});
+
+// the adzan notification: open (or come back to) the schedule
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || "/jadwal-salat";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const c of list) if ("focus" in c) return c.focus();
+      return self.clients.openWindow(url);
+    }),
+  );
 });

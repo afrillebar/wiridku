@@ -4370,3 +4370,77 @@ span.lsn-title-qari span {
     height: 60px;
   }
 }
+
+/* ---------- Adzan ---------- */
+.sched-bell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  margin-left: 2px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+.sched-bell.on {
+  background: var(--sage-wash);
+  color: var(--sage-dark);
+}
+.sched-adzan {
+  display: block;
+  margin: 6px 8px 4px;
+  padding: 10px 0 2px;
+  border-top: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--sage-dark);
+  text-align: center;
+  text-decoration: none;
+}
+.adzan-bar {
+  position: fixed;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  left: 12px;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--sage-dark);
+  color: var(--on-sage);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
+}
+.adzan-bar span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.adzan-bar small {
+  opacity: 0.8;
+}
+.adzan-bar button {
+  flex: none;
+  min-height: 40px;
+  padding: 6px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: #1c2a22;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.adzan-test {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
