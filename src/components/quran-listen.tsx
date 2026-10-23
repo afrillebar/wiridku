@@ -191,14 +191,14 @@ export function ListenView(p: Props) {
             <path d="M7 15a4 4 0 1 1 .9-7.9A5 5 0 0 1 17.6 9 3.5 3.5 0 0 1 17 16H7z" />
             <path d="M9 19l-1 2M13 19l-1 2M17 19l-1 2" />
           </Icon>
-          {ambientLabel}
+          <span className="lsn-chip-label">{ambientLabel}</span>
         </button>
         <span className="lsn-gap" />
         <button type="button" className={`lsn-chip${p.sleep ? " on" : ""}`} onClick={() => setSheet("timer")} aria-haspopup="dialog" aria-label="Timer tidur">
           <Icon size={18}>
             <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
           </Icon>
-          <SleepLabel sleep={p.sleep} end={`Akhir ${L.part}`} />
+          <span className="lsn-chip-label"><SleepLabel sleep={p.sleep} end={`Akhir ${L.part}`} /></span>
         </button>
         <button type="button" className="lsn-round" onClick={() => setSheet("tampilan")} aria-haspopup="dialog" aria-label="Pengaturan tampilan">
           <Icon>

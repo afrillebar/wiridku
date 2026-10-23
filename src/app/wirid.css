@@ -3591,13 +3591,20 @@ button.set-row {
   cursor: default;
 }
 .lsn-top {
+  position: relative;
+  z-index: 2;
   display: flex;
+  flex: none;
   align-items: center;
   gap: 8px;
-  width: 100%;
-  max-width: 720px;
-  margin: 0 auto;
-  padding: calc(12px + env(safe-area-inset-top)) 16px 8px;
+  width: calc(100% - 24px);
+  max-width: 696px;
+  margin: calc(12px + env(safe-area-inset-top)) auto 0;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 26px;
+  background: rgba(10, 18, 15, 0.86);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
 }
 .lsn-gap {
   flex: 1;
@@ -3613,42 +3620,38 @@ button.set-row {
   background: rgba(40, 56, 50, 0.72);
 }
 .lsn-round {
+  flex: none;
   width: 44px;
+  height: 44px;
   border-radius: 50%;
 }
 .lsn-chip {
+  min-width: 0;
   padding: 0 16px;
+  white-space: nowrap;
   border-radius: 999px;
   font-size: 0.9rem;
   font-variant-numeric: tabular-nums;
+}
+.lsn-chip svg {
+  flex: none;
+}
+.lsn-chip-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .lsn-chip.on {
   border-color: rgba(255, 255, 255, 0.6);
   background: rgba(255, 255, 255, 0.2);
 }
-/* the list fades into the picture at both ends with two gradients laid over it (a mask on the scroller repaints on every scroll frame) */
+/* Fade the stationary verse stage into the picture above and below the text. */
 .lsn-stage {
   position: relative;
   flex: 1;
   min-height: 0;
-}
-.lsn-stage::before,
-.lsn-stage::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  left: 0;
-  z-index: 1;
-  height: 16%;
-  pointer-events: none;
-}
-.lsn-stage::before {
-  top: 0;
-  background: linear-gradient(to bottom, rgba(8, 14, 12, 0.85), transparent);
-}
-.lsn-stage::after {
-  bottom: 0;
-  background: linear-gradient(to top, rgba(8, 14, 12, 0.85), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent);
 }
 .lsn-verses {
   position: absolute;
@@ -3703,10 +3706,13 @@ button.set-row {
   line-height: 1.4;
 }
 .lsn-player {
+  position: relative;
+  z-index: 2;
+  flex: none;
   width: calc(100% - 24px);
   max-width: 696px;
-  margin: 0 auto calc(12px + env(safe-area-inset-bottom));
-  padding: 14px 18px 12px;
+  margin: 8px auto calc(12px + env(safe-area-inset-bottom));
+  padding: 16px 18px 14px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 26px;
   /* nearly opaque instead of a live blur: blurring the scrolling text behind it costs a full-screen pass per frame */
@@ -3844,7 +3850,7 @@ button.set-row {
 }
 .lsn-btns {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   align-items: center;
   justify-items: center;
   margin-top: 6px;
@@ -4459,6 +4465,32 @@ span.lsn-title-qari span {
   .qrn-player {
     padding-right: 10px;
     padding-left: 10px;
+  }
+}
+@media (max-width: 380px) {
+  .lsn-top {
+    gap: 6px;
+    padding: 8px;
+  }
+  .lsn-top .lsn-chip {
+    gap: 4px;
+    padding: 0 8px;
+    font-size: 0.8rem;
+  }
+  .lsn-player {
+    padding: 12px 10px 10px;
+    border-radius: 22px;
+  }
+  .lsn-now {
+    gap: 8px;
+  }
+  .lsn .lsn-title-surah {
+    font-size: 1rem;
+  }
+  .lsn .lsn-list {
+    gap: 4px;
+    padding: 0 10px;
+    font-size: 0.78rem;
   }
 }
 @media (max-width: 360px) {
