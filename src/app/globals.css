@@ -78,3 +78,16 @@ html[data-font-id="lexend"] {
 html[data-font-id="serif"] {
   --id-font: var(--font-noto-serif), serif;
 }
+
+/* Keep focus indicators within controls, including inside clipped/scrolling panels. */
+:root {
+  --focus-ring: currentColor;
+}
+:where(a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+input[type="search"] {
+  appearance: none;
+  -webkit-appearance: none;
+}

@@ -1,10 +1,11 @@
 "use client";
 
-import { memo, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { memo, useEffect, useId, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
 import { AMBIENTS, type AmbientId } from "@/lib/ambient";
 import { clock, paintFill, useAudioClock, type Clip } from "@/lib/audio-clock";
 import type { ListenBackground } from "@/lib/content";
 import type { Qari, Surah, Verse } from "@/lib/quran-types";
+import { QuranDrawer, QuranModeToggle, useModalFocus } from "./quran-ui";
 import { QariList } from "./qari-list";
 import { SurahList } from "./surah-list";
 
@@ -17,6 +18,18 @@ function Icon({ children, size = 22 }: { children: ReactNode; size?: number }) {
     <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {children}
     </svg>
+  );
+}
+
+function AmbientIcon({ id, size = 18 }: { id: AmbientId | null; size?: number }) {
+  return (
+    <Icon size={size}>
+      {id === "hujan" ? <><path d="M7 14a4 4 0 1 1 .9-7.9A5 5 0 0 1 17.6 8 3.5 3.5 0 0 1 17 15H7" /><path d="m8 18-1 3m6-3-1 3m6-3-1 3" /></>
+        : id === "angin" ? <><path d="M3 8h12a3 3 0 1 0-3-3M2 12h17a3 3 0 1 1-3 3M4 16h5a3 3 0 1 1-3 3" /></>
+        : id === "ombak" ? <><path d="M2 8c2-3 4 3 6 0s4 3 6 0 4 3 8 0M2 13c2-3 4 3 6 0s4 3 6 0 4 3 8 0M2 18c2-3 4 3 6 0s4 3 6 0 4 3 8 0" /></>
+        : id === "sungai" ? <><path d="M12 2c-1.5 2-4 4.5-4 7a4 4 0 0 0 8 0c0-2.5-2.5-5-4-7ZM3 17c3-3 6 3 9 0s6 3 9 0M3 21c3-3 6 3 9 0s6 3 9 0" /></>
+        : <><path d="M11 5 6 9H3v6h3l5 4V5ZM16 9l6 6m0-6-6 6" /></>}
+    </Icon>
   );
 }
 
@@ -109,37 +122,21 @@ type Props = {
   onAmbientVol: (v: number) => void;
   onAutoNext: (on: boolean) => void;
   onSleep: (s: Sleep) => void;
+  onReadMode?: () => void;
   onClose: () => void;
 };
 
 export function ListenView(p: Props) {
   const L = p.labels ?? QURAN_LABELS;
+  const volumeId = useId();
   const [sheet, setSheet] = useState<null | "suara" | "timer" | "tampilan" | "surah" | "qari">(null);
   const { rangeRef, nowRef, lastRef, drag } = useAudioClock(p.audioRef, p.playing, "left", p.clipRef);
   // the last text still shown cannot be hidden, or the screen would be empty
   const shown = SHOW_OPTIONS.filter((o) => p.show[o.key]).length;
-  const closeBtn = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useModalFocus(dialogRef, p.onClose);
   const picked = p.bg === "none" ? null : (p.backgrounds.find((b) => b.id === p.bg) ?? p.backgrounds[0] ?? null);
-  const { onClose, active, playing } = p;
-
-  useEffect(() => {
-    closeBtn.current?.focus();
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
-
-  useEffect(() => {
-    const key = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      if (sheet) setSheet(null);
-      else onClose();
-    };
-    window.addEventListener("keydown", key);
-    return () => window.removeEventListener("keydown", key);
-  }, [sheet, onClose]);
+  const { active, playing } = p;
 
   // the first jump lands at once, and so does a long one; only a step to a nearby verse glides
   const jumped = useRef(false);
@@ -175,155 +172,157 @@ export function ListenView(p: Props) {
   const ambientLabel = AMBIENTS.find((a) => a.id === p.ambient)?.label ?? "Suara latar";
 
   return (
-    <div className="lsn" role="dialog" aria-modal="true" aria-label={`Mode dengar, ${L.part} ${p.surah.name}`}>
+    <div ref={dialogRef} className="lsn" tabIndex={-1} role="dialog" aria-modal="true" aria-label={`Mode dengar, ${L.part} ${p.surah.name}`}>
       <div className={`lsn-bg${picked ? "" : " plain"}`} style={picked ? { backgroundImage: `url("${picked.url}")` } : undefined} aria-hidden="true" />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {picked && <img className="lsn-bg-img" src={picked.url} alt="" aria-hidden="true" />}
 
-      <header className="lsn-top">
-        <button ref={closeBtn} type="button" className="lsn-round" onClick={p.onClose} aria-label="Tutup mode dengar">
-          <Icon>
-            <path d="m6 9 6 6 6-6" />
-          </Icon>
-        </button>
-        <button type="button" className={`lsn-chip${p.ambient ? " on" : ""}`} onClick={() => setSheet("suara")} aria-haspopup="dialog">
-          <Icon size={18}>
-            <path d="M7 15a4 4 0 1 1 .9-7.9A5 5 0 0 1 17.6 9 3.5 3.5 0 0 1 17 16H7z" />
-            <path d="M9 19l-1 2M13 19l-1 2M17 19l-1 2" />
-          </Icon>
-          <span className="lsn-chip-label">{ambientLabel}</span>
-        </button>
-        <span className="lsn-gap" />
-        <button type="button" className={`lsn-chip${p.sleep ? " on" : ""}`} onClick={() => setSheet("timer")} aria-haspopup="dialog" aria-label="Timer tidur">
-          <Icon size={18}>
-            <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
-          </Icon>
-          <span className="lsn-chip-label"><SleepLabel sleep={p.sleep} end={`Akhir ${L.part}`} /></span>
-        </button>
-        <button type="button" className="lsn-round" onClick={() => setSheet("tampilan")} aria-haspopup="dialog" aria-label="Pengaturan tampilan">
-          <Icon>
-            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-            <circle cx="12" cy="12" r="3" />
-          </Icon>
-        </button>
-      </header>
-
-      <div className="lsn-stage">
-        <div ref={scroller} className="lsn-verses">
-          {p.verses.map((v) => (
-            <LsnVerse key={v.n} v={v} surah={p.surah.id} unit={L.unit} on={p.active === v.n} show={p.show} onPlay={p.onPlayFrom} />
-          ))}
-        </div>
-      </div>
-
-      <div className="lsn-player">
-        <div className="lsn-now">
-          <div className="lsn-title">
-            <button type="button" className="lsn-title-surah" onClick={() => setSheet("surah")} aria-haspopup="dialog" aria-label={`${p.surah.id}. ${p.surah.name}, pilih ${L.part} lain`}>
-              {p.surah.id}. {p.surah.name} <span lang="ar">{p.surah.arabic}</span>
+      <div className="lsn-content">
+        <header className={`lsn-top${p.onReadMode ? " with-mode" : ""}`}>
+          {!p.onReadMode && (
+            <button type="button" className="lsn-round" onClick={p.onClose} aria-label="Tutup mode dengar">
+              <Icon>
+                <path d="m6 9 6 6 6-6" />
+              </Icon>
             </button>
-            {p.qariPick === false ? (
-              <span className="lsn-title-qari">
-                <span>{p.qariName}</span>
-              </span>
-            ) : (
-              <button type="button" className="lsn-title-qari" onClick={() => setSheet("qari")} aria-haspopup="dialog" aria-label={`Qari ${p.qariName}, ganti qari`}>
-                <span>{p.qariName}</span>
-                <Icon size={14}>
-                  <path d="m6 9 6 6 6-6" />
-                </Icon>
-              </button>
-            )}
-            <span className="lsn-title-status">{p.status}</span>
-          </div>
-          <button type="button" className="lsn-list" onClick={() => setSheet("surah")} aria-haspopup="dialog">
+          )}
+          {p.onReadMode && <QuranModeToggle mode="dengar" onChange={(mode) => { if (mode === "baca") p.onReadMode?.(); }} />}
+          <button type="button" className={`lsn-chip lsn-ambient${p.ambient ? " on" : ""}`} onClick={() => setSheet("suara")} aria-haspopup="dialog">
+            <AmbientIcon id={p.ambient} />
+            <span className="lsn-chip-label">{ambientLabel}</span>
+          </button>
+          <span className="lsn-gap" />
+          <button type="button" className={`lsn-chip lsn-timer${p.sleep ? " on" : ""}`} onClick={() => setSheet("timer")} aria-haspopup="dialog" aria-label="Timer tidur">
             <Icon size={18}>
-              <path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" />
+              <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
             </Icon>
-            {cap(L.part)}
+            <span className="lsn-chip-label"><SleepLabel sleep={p.sleep} end={`Akhir ${L.part}`} /></span>
           </button>
+          <button type="button" className="lsn-round" onClick={() => setSheet("tampilan")} aria-haspopup="dialog" aria-label="Pengaturan tampilan">
+            <Icon>
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+              <circle cx="12" cy="12" r="3" />
+            </Icon>
+          </button>
+        </header>
+
+        <div className="lsn-stage">
+          <div ref={scroller} className="lsn-verses">
+            {p.verses.map((v) => (
+              <LsnVerse key={v.n} v={v} surah={p.surah.id} unit={L.unit} on={p.active === v.n} show={p.show} onPlay={p.onPlayFrom} />
+            ))}
+          </div>
         </div>
 
-        <input
-          ref={rangeRef}
-          type="range"
-          className="lsn-seek"
-          min={0}
-          max={0}
-          step="any"
-          defaultValue={0}
-          onChange={(e) => {
-            paintFill(e.currentTarget);
-            p.onSeek(Number(e.currentTarget.value));
-          }}
-          {...drag}
-          aria-label={`Posisi ${L.audio}`}
-        />
-        <div className="lsn-times">
-          <span ref={nowRef}>0:00</span>
-          <span ref={lastRef}>-0:00</span>
+        <div className="lsn-player">
+          <div className="lsn-now">
+            <div className="lsn-title">
+              <button type="button" className="lsn-title-surah" onClick={() => setSheet("surah")} aria-haspopup="dialog" aria-label={`${p.surah.id}. ${p.surah.name}, pilih ${L.part} lain`}>
+                {p.surah.id}. {p.surah.name} <span lang="ar">{p.surah.arabic}</span>
+              </button>
+              {p.qariPick === false ? (
+                <span className="lsn-title-qari">
+                  <span>{p.qariName}</span>
+                </span>
+              ) : (
+                <button type="button" className="lsn-title-qari" onClick={() => setSheet("qari")} aria-haspopup="dialog" aria-label={`Qari ${p.qariName}, ganti qari`}>
+                  <span>{p.qariName}</span>
+                  <Icon size={14}>
+                    <path d="m6 9 6 6 6-6" />
+                  </Icon>
+                </button>
+              )}
+              <span className="lsn-title-status">{p.status}</span>
+            </div>
+            <button type="button" className="lsn-list" onClick={() => setSheet("surah")} aria-haspopup="dialog">
+              <Icon size={18}>
+                <path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" />
+              </Icon>
+              {cap(L.part)}
+            </button>
+          </div>
+
+          <input
+            ref={rangeRef}
+            type="range"
+            className="lsn-seek"
+            min={0}
+            max={0}
+            step="any"
+            defaultValue={0}
+            onChange={(e) => {
+              paintFill(e.currentTarget);
+              p.onSeek(Number(e.currentTarget.value));
+            }}
+            {...drag}
+            aria-label={`Posisi ${L.audio}`}
+          />
+          <div className="lsn-times">
+            <span ref={nowRef}>0:00</span>
+            <span ref={lastRef}>-0:00</span>
+          </div>
+
+          <div className="lsn-btns">
+            <button type="button" className="lsn-skip" onClick={p.onPrevSurah} disabled={!p.prevName} aria-label={p.prevName ? `${cap(L.part)} sebelumnya, ${p.prevName}` : `${cap(L.part)} sebelumnya`}>
+              <Icon size={22}>
+                <path d="M6 5v14" strokeWidth="2.4" />
+                <path d="M19 5.5 8.5 12 19 18.5z" fill="currentColor" />
+              </Icon>
+              <small>{cap(L.part)}</small>
+            </button>
+            <button type="button" className="lsn-skip" onClick={() => p.onStep(-1)} disabled={!p.canStep} aria-label={`${cap(L.unit)} sebelumnya`}>
+              <Icon size={22}>
+                <path d="M11.5 6 4 12l7.5 6zM20.5 6 13 12l7.5 6z" fill="currentColor" />
+              </Icon>
+              <small>{cap(L.unit)}</small>
+            </button>
+            <button type="button" className="lsn-play" onClick={p.onToggle} disabled={!p.canPlay} aria-label={p.playing ? "Jeda" : "Putar"}>
+              <Icon size={30}>{p.playing ? <path d="M8 5v14M16 5v14" strokeWidth="3.2" /> : <path d="M8 4.5v15l12-7.5z" fill="currentColor" />}</Icon>
+            </button>
+            <button type="button" className="lsn-skip" onClick={() => p.onStep(1)} disabled={!p.canStep} aria-label={`${cap(L.unit)} berikutnya`}>
+              <Icon size={22}>
+                <path d="M12.5 6 20 12l-7.5 6zM3.5 6 11 12l-7.5 6z" fill="currentColor" />
+              </Icon>
+              <small>{cap(L.unit)}</small>
+            </button>
+            <button type="button" className="lsn-skip" onClick={p.onNextSurah} disabled={!p.nextName} aria-label={p.nextName ? `${cap(L.part)} berikutnya, ${p.nextName}` : `${cap(L.part)} berikutnya`}>
+              <Icon size={22}>
+                <path d="M18 5v14" strokeWidth="2.4" />
+                <path d="M5 5.5 15.5 12 5 18.5z" fill="currentColor" />
+              </Icon>
+              <small>{cap(L.part)}</small>
+            </button>
+          </div>
         </div>
 
-        <div className="lsn-btns">
-          <button type="button" className="lsn-skip" onClick={p.onPrevSurah} disabled={!p.prevName} aria-label={p.prevName ? `${cap(L.part)} sebelumnya, ${p.prevName}` : `${cap(L.part)} sebelumnya`}>
-            <Icon size={22}>
-              <path d="M6 5v14" strokeWidth="2.4" />
-              <path d="M19 5.5 8.5 12 19 18.5z" fill="currentColor" />
-            </Icon>
-            <small>{cap(L.part)}</small>
-          </button>
-          <button type="button" className="lsn-skip" onClick={() => p.onStep(-1)} disabled={!p.canStep} aria-label={`${cap(L.unit)} sebelumnya`}>
-            <Icon size={22}>
-              <path d="M11.5 6 4 12l7.5 6zM20.5 6 13 12l7.5 6z" fill="currentColor" />
-            </Icon>
-            <small>{cap(L.unit)}</small>
-          </button>
-          <button type="button" className="lsn-play" onClick={p.onToggle} disabled={!p.canPlay} aria-label={p.playing ? "Jeda" : "Putar"}>
-            <Icon size={30}>{p.playing ? <path d="M8 5v14M16 5v14" strokeWidth="3.2" /> : <path d="M8 4.5v15l12-7.5z" fill="currentColor" />}</Icon>
-          </button>
-          <button type="button" className="lsn-skip" onClick={() => p.onStep(1)} disabled={!p.canStep} aria-label={`${cap(L.unit)} berikutnya`}>
-            <Icon size={22}>
-              <path d="M12.5 6 20 12l-7.5 6zM3.5 6 11 12l-7.5 6z" fill="currentColor" />
-            </Icon>
-            <small>{cap(L.unit)}</small>
-          </button>
-          <button type="button" className="lsn-skip" onClick={p.onNextSurah} disabled={!p.nextName} aria-label={p.nextName ? `${cap(L.part)} berikutnya, ${p.nextName}` : `${cap(L.part)} berikutnya`}>
-            <Icon size={22}>
-              <path d="M18 5v14" strokeWidth="2.4" />
-              <path d="M5 5.5 15.5 12 5 18.5z" fill="currentColor" />
-            </Icon>
-            <small>{cap(L.part)}</small>
-          </button>
-        </div>
       </div>
 
       {sheet && (
-        <div className="lsn-sheet-wrap" onClick={() => setSheet(null)}>
-          <section className="lsn-sheet" role="dialog" aria-label={{ suara: "Suara latar", timer: "Timer tidur", tampilan: "Pengaturan tampilan", surah: `Pilih ${L.part}`, qari: "Pilih qari" }[sheet]} onClick={(e) => e.stopPropagation()}>
-            <span className="lsn-grip" aria-hidden="true" />
+        <QuranDrawer dark title={{ suara: "Suara latar", timer: "Timer tidur", tampilan: "Pengaturan tampilan", surah: `Pilih ${L.part}`, qari: "Pilih qari" }[sheet]} onClose={() => setSheet(null)}>
             {sheet === "suara" && (
               <>
-                <h2>Suara latar</h2>
                 <div className="lsn-options" role="group" aria-label="Suara latar">
                   <button type="button" aria-pressed={!p.ambient} onClick={() => p.onAmbient(null)}>
-                    Mati
+                    <AmbientIcon id={null} /> Mati
                   </button>
                   {AMBIENTS.map((a) => (
                     <button key={a.id} type="button" aria-pressed={p.ambient === a.id} onClick={() => p.onAmbient(a.id)}>
-                      {a.label}
+                      <AmbientIcon id={a.id} /> {a.label}
                     </button>
                   ))}
                 </div>
-                <label className="lsn-vol">
-                  <span>Volume</span>
-                  <input type="range" min={0} max={100} value={Math.round(p.ambientVol * 100)} onChange={(e) => p.onAmbientVol(Number(e.target.value) / 100)} disabled={!p.ambient} />
-                </label>
+                <div className={`lsn-volume${p.ambient ? "" : " off"}`}>
+                  <div className="lsn-volume-head">
+                    <label htmlFor={volumeId}>Volume suara latar</label>
+                    <output htmlFor={volumeId}>{Math.round(p.ambientVol * 100)}%</output>
+                  </div>
+                  <input id={volumeId} type="range" min={0} max={100} value={Math.round(p.ambientVol * 100)} onChange={(e) => p.onAmbientVol(Number(e.target.value) / 100)} disabled={!p.ambient} style={{ "--volume": `${Math.round(p.ambientVol * 100)}%` } as CSSProperties} />
+                </div>
                 <p className="lsn-hint">Suara latar ikut berhenti saat {L.audio} dijeda.</p>
               </>
             )}
             {sheet === "timer" && (
               <>
-                <h2>Timer tidur</h2>
                 <div className="lsn-options" role="group" aria-label="Berhenti setelah">
                   <button type="button" aria-pressed={!p.sleep} onClick={() => p.onSleep(null)}>
                     Mati
@@ -350,13 +349,11 @@ export function ListenView(p: Props) {
             )}
             {sheet === "surah" && (
               <>
-                <h2>Pilih {L.part}</h2>
-                <SurahList surahs={p.surahs} current={p.surah.id} onPick={p.onSurah} unit={L.unit} noun={L.part} />
+                <SurahList surahs={p.surahs} current={p.surah.id} onPick={(id) => { setSheet(null); p.onSurah(id); }} unit={L.unit} noun={L.part} />
               </>
             )}
             {sheet === "qari" && (
               <>
-                <h2>Pilih qari</h2>
                 <QariList
                   qaris={p.qaris}
                   current={p.qari}
@@ -394,8 +391,7 @@ export function ListenView(p: Props) {
                 {!p.backgrounds.length && <p className="lsn-hint">Belum ada gambar latar dari admin.</p>}
               </>
             )}
-          </section>
-        </div>
+        </QuranDrawer>
       )}
     </div>
   );

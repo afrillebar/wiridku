@@ -18,7 +18,9 @@ export function SurahList({ surahs, current, onPick, unit = "ayat", noun = "sura
   const shown = useMemo(() => surahs.filter((s) => matchSurah(s, query)), [surahs, query]);
 
   useEffect(() => {
-    here.current?.scrollIntoView({ block: "center" });
+    const row = here.current;
+    const list = row?.closest("ol");
+    if (row && list) list.scrollTop += row.getBoundingClientRect().top - list.getBoundingClientRect().top - (list.clientHeight - row.clientHeight) / 2;
   }, []);
 
   return (

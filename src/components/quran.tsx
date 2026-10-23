@@ -10,6 +10,7 @@ import { addListenSeconds, readQuranPlace, useQuranPlace, useQuranPrefs, useText
 import { DEFAULT_QARI, type Qari, type Recitation, type Surah, type Verse } from "@/lib/quran-types";
 import { ListenGoalCard } from "./listen-goal";
 import { ListenView, type Sleep } from "./quran-listen";
+import { QuranDrawer, QuranModeToggle, useReadingControls } from "./quran-ui";
 import { QariList } from "./qari-list";
 import { SurahList, matchSurah } from "./surah-list";
 
@@ -175,6 +176,7 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
   // when the stretch of playing not yet added to the daily listening time began; 0 while paused
   const heardFrom = useRef(0);
   const [listening, setListening] = useState(false);
+  const { hidden: controlsHidden } = useReadingControls(!listening && !picking);
   const { rangeRef, nowRef, lastRef, drag } = useAudioClock(audioRef, playing, "total");
   const [sleep, setSleep] = useState<Sleep>(null);
   const ambient = useRef<Ambient | null>(null);
@@ -415,7 +417,12 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
     } else a.pause();
   };
 
-  const closeListen = useCallback(() => setListening(false), []);
+  const closeListen = useCallback(() => {
+    setListening(false);
+    requestAnimationFrame(() => {
+      if (activeRef.current) document.getElementById(`ayat-${activeRef.current}`)?.scrollIntoView({ block: "center", behavior: "instant" });
+    });
+  }, []);
 
   const pickAmbient = (id: AmbientId | null) => {
     if (id) (ambient.current ??= new Ambient()).unlock();
@@ -433,163 +440,154 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
 
   return (
     <div className="qrn qrn-reader" style={textVars(text)}>
-      <header className="cal-head">
-        <BackLink href="/alquran" label="Kembali ke daftar surah" />
-        <div>
-          <h1>
-            <button type="button" className="qrn-title-btn" onClick={() => setPicking("surah")} aria-haspopup="dialog" aria-label={`${surah.id}. ${surah.name}, pilih surah lain`}>
-              {surah.id}. {surah.name}
-              <Icon size={18}>
-                <path d="m6 9 6 6 6-6" />
-              </Icon>
-            </button>
-          </h1>
-          <p>
-            <span>
-              {surah.meaning} · {surah.verses} ayat · {placeLabel(surah.place)}
-            </span>
-          </p>
-        </div>
-        <span className="qrn-head-ar" lang="ar" dir="rtl">
-          {surah.arabic}
-        </span>
-      </header>
-
-      <ListenGoalCard compact />
-
-      <div className="qrn-tools">
-        <div className="qrn-qari">
-          <button type="button" className="qrn-qari-btn" onClick={() => setPicking("qari")} aria-haspopup="dialog">
-            <small>Qari</small>
-            <strong>{qariName}</strong>
-            <Icon size={16}>
-              <path d="m6 9 6 6 6-6" />
-            </Icon>
-          </button>
-          <button type="button" className="qrn-listen-btn" onClick={() => setListening(true)}>
-            <Icon size={18}>
-              <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
-              <rect x="3" y="14" width="5" height="7" rx="2" />
-              <rect x="16" y="14" width="5" height="7" rx="2" />
-            </Icon>
-            Mode dengar
-          </button>
-        </div>
-        <div className="doa-cats" role="group" aria-label="Tampilan bacaan">
-          <button type="button" aria-pressed={text.showArti} onClick={() => text.set({ showArti: !text.showArti })}>
-            Arti
-          </button>
-          <button type="button" aria-pressed={text.showLatin} onClick={() => text.set({ showLatin: !text.showLatin })}>
-            Latin
-          </button>
-          <button type="button" aria-pressed={prefs.follow} onClick={() => prefs.set({ follow: !prefs.follow })}>
-            Ikuti bacaan
-          </button>
-        </div>
-      </div>
-
-      {surah.bismillah && (
-        <p className="arabic qrn-basmalah" dir="rtl" lang="ar">
-          بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
-        </p>
-      )}
-
-      <div className="qrn-verses">
-        {verses.map((v) => (
-          <VerseRow key={v.n} v={v} on={prefs.follow && active === v.n} showLatin={text.showLatin} showArti={text.showArti} canPlay={!!timings} onPlay={playFrom} />
-        ))}
-      </div>
-
-      <nav className="qrn-pager" aria-label="Surah lain">
-        {prev ? (
-          <Link href={`/alquran/${prev.id}`}>
-            <small>Sebelumnya</small>
-            {prev.name}
-          </Link>
-        ) : (
-          <span />
-        )}
-        {next && (
-          <Link href={`/alquran/${next.id}`} className="next">
-            <small>Berikutnya</small>
-            {next.name}
-          </Link>
-        )}
-      </nav>
-
-      <div className="qrn-player" role="region" aria-label="Pemutar murotal">
-        <input
-          ref={rangeRef}
-          type="range"
-          min={0}
-          max={0}
-          step="any"
-          defaultValue={0}
-          onChange={(e) => {
-            paintFill(e.currentTarget);
-            seek(Number(e.currentTarget.value), false);
-          }}
-          {...drag}
-          aria-label="Posisi murotal"
-        />
-        <div className="qrn-player-row">
-          <span className="qrn-time">
-            <span ref={nowRef}>0:00</span> / <span ref={lastRef}>0:00</span>
+      <div className="qrn-reading-content" data-covered={listening || !!picking} data-chrome-hidden={controlsHidden}>
+        <header className="cal-head">
+          <BackLink href="/alquran" label="Kembali ke daftar surah" />
+          <div>
+            <h1>
+              <button type="button" className="qrn-title-btn" onClick={() => setPicking("surah")} aria-haspopup="dialog" aria-label={`${surah.id}. ${surah.name}, pilih surah lain`}>
+                {surah.id}. {surah.name}
+                <Icon size={18}>
+                  <path d="m6 9 6 6 6-6" />
+                </Icon>
+              </button>
+            </h1>
+            <p>
+              <span>
+                {surah.meaning} · {surah.verses} ayat · {placeLabel(surah.place)}
+              </span>
+            </p>
+          </div>
+          <span className="qrn-head-ar" lang="ar" dir="rtl">
+            {surah.arabic}
           </span>
-          <div className="qrn-btns">
-            <button type="button" onClick={() => step(-1)} disabled={!timings} aria-label="Ayat sebelumnya">
-              <Icon>
-                <path d="M6 5v14M18 6l-9 6 9 6z" />
-              </Icon>
-            </button>
-            <button type="button" className="qrn-play" onClick={toggle} disabled={!recitation} aria-label={playing ? "Jeda" : "Putar"}>
-              <Icon size={24}>{playing ? <path d="M8 5v14M16 5v14" /> : <path d="M8 5v14l11-7z" fill="currentColor" />}</Icon>
-            </button>
-            <button type="button" onClick={() => step(1)} disabled={!timings} aria-label="Ayat berikutnya">
-              <Icon>
-                <path d="M18 5v14M6 6l9 6-9 6z" />
-              </Icon>
+        </header>
+
+        <ListenGoalCard compact />
+
+        <div className="qrn-tools" inert={controlsHidden}>
+          <div className="qrn-toolbar-head">
+            <div className="qrn-mode-nav">
+              <Link href="/" className="qrn-home" aria-label="Kembali ke Beranda" title="Kembali ke Beranda">
+                <Icon><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10Z" /></Icon>
+              </Link>
+              <QuranModeToggle mode="baca" onChange={(mode) => { if (mode === "dengar") setListening(true); }} />
+            </div>
+            <button type="button" className="qrn-surah-pick" onClick={() => setPicking("surah")} aria-haspopup="dialog" aria-label="Daftar surah">
+              <span className="qrn-surah-label">Daftar surah</span>
+              <Icon size={18}><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></Icon>
             </button>
           </div>
-          <span className="qrn-now">
-            <strong>{status}</strong>
-            <span>{qariName}</span>
-          </span>
+          <div className="doa-cats" role="group" aria-label="Tampilan bacaan">
+            <button type="button" aria-pressed={text.showArti} onClick={() => text.set({ showArti: !text.showArti })}>
+              Terjemahan
+            </button>
+            <button type="button" aria-pressed={text.showLatin} onClick={() => text.set({ showLatin: !text.showLatin })}>
+              Latin
+            </button>
+            <button type="button" aria-pressed={prefs.follow} onClick={() => prefs.set({ follow: !prefs.follow })}>
+              Ikuti bacaan
+            </button>
+          </div>
         </div>
-        <audio
-          ref={audioRef}
-          src={recitation?.url}
-          preload="metadata"
-          onLoadedMetadata={onMeta}
-          onTimeUpdate={onTime}
-          onPlay={() => setPlaying(true)}
-          onPause={() => {
-            setPlaying(false);
-            save();
-          }}
-          onEnded={onEnded}
-          onEmptied={() => setPlaying(false)}
-        />
-      </div>
 
-      {picking && (
-        <div className="qrn-sheet-wrap" onClick={() => setPicking(null)}>
-          <section className="qrn-sheet" role="dialog" aria-modal="true" aria-label={picking === "surah" ? "Pilih surah" : "Pilih qari"} onClick={(e) => e.stopPropagation()}>
-            <div className="qrn-sheet-head">
-              <h2>{picking === "surah" ? "Pilih surah" : "Pilih qari"}</h2>
-              <button type="button" onClick={() => setPicking(null)} aria-label="Tutup">
+        {surah.bismillah && (
+          <p className="arabic qrn-basmalah" dir="rtl" lang="ar">
+            بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+          </p>
+        )}
+
+        <div className="qrn-verses">
+          {verses.map((v) => (
+            <VerseRow key={v.n} v={v} on={prefs.follow && active === v.n} showLatin={text.showLatin} showArti={text.showArti} canPlay={!!timings} onPlay={playFrom} />
+          ))}
+        </div>
+
+        <nav className="qrn-pager" aria-label="Surah lain">
+          {prev ? (
+            <Link href={`/alquran/${prev.id}`}>
+              <small>Sebelumnya</small>
+              {prev.name}
+            </Link>
+          ) : (
+            <span />
+          )}
+          {next && (
+            <Link href={`/alquran/${next.id}`} className="next">
+              <small>Berikutnya</small>
+              {next.name}
+            </Link>
+          )}
+        </nav>
+
+        <div className="qrn-player" inert={controlsHidden} role="region" aria-label="Pemutar murotal">
+          <input
+            ref={rangeRef}
+            type="range"
+            min={0}
+            max={0}
+            step="any"
+            defaultValue={0}
+            onChange={(e) => {
+              paintFill(e.currentTarget);
+              seek(Number(e.currentTarget.value), false);
+            }}
+            {...drag}
+            aria-label="Posisi murotal"
+          />
+          <div className="qrn-player-row">
+            <span className="qrn-time">
+              <span ref={nowRef}>0:00</span> / <span ref={lastRef}>0:00</span>
+            </span>
+            <div className="qrn-btns">
+              <button type="button" onClick={() => step(-1)} disabled={!timings} aria-label="Ayat sebelumnya">
                 <Icon>
-                  <path d="M6 6l12 12M18 6 6 18" />
+                  <path d="M6 5v14M18 6l-9 6 9 6z" />
+                </Icon>
+              </button>
+              <button type="button" className="qrn-play" onClick={toggle} disabled={!recitation} aria-label={playing ? "Jeda" : "Putar"}>
+                <Icon size={24}>{playing ? <path d="M8 5v14M16 5v14" /> : <path d="M8 5v14l11-7z" fill="currentColor" />}</Icon>
+              </button>
+              <button type="button" onClick={() => step(1)} disabled={!timings} aria-label="Ayat berikutnya">
+                <Icon>
+                  <path d="M18 5v14M6 6l9 6-9 6z" />
                 </Icon>
               </button>
             </div>
+            <span className="qrn-now">
+              <strong>{status}</strong>
+              <button type="button" className="qrn-player-qari" onClick={() => setPicking("qari")} aria-haspopup="dialog" aria-label={`Ganti qari, ${qariName}`}>
+                <span>{qariName}</span>
+                <Icon size={14}><path d="m6 9 6 6 6-6" /></Icon>
+              </button>
+            </span>
+          </div>
+          <audio
+            ref={audioRef}
+            src={recitation?.url}
+            preload="metadata"
+            onLoadedMetadata={onMeta}
+            onTimeUpdate={onTime}
+            onPlay={() => setPlaying(true)}
+            onPause={() => {
+              setPlaying(false);
+              save();
+            }}
+            onEnded={onEnded}
+            onEmptied={() => setPlaying(false)}
+          />
+        </div>
+
+      </div>
+
+      {picking && (
+        <QuranDrawer title={picking === "surah" ? "Pilih surah" : "Pilih qari"} onClose={() => setPicking(null)}>
             {picking === "surah" ? (
               <SurahList surahs={surahs} current={surah.id} onPick={(id) => goTo(id, false, playing)} />
             ) : (
               <QariList qaris={qaris} current={qari} onPick={changeQari} />
             )}
-          </section>
-        </div>
+        </QuranDrawer>
       )}
 
       {listening && (
@@ -629,6 +627,7 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
           onAmbientVol={(v) => prefs.set({ ambientVol: v })}
           onAutoNext={(on) => prefs.set({ autoNext: on })}
           onSleep={setSleep}
+          onReadMode={closeListen}
           onClose={closeListen}
         />
       )}

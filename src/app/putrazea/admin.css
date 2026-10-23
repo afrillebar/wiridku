@@ -1,4 +1,5 @@
 .admin {
+  --focus-ring: var(--gold);
   --danger: #8a2d1f;
   --warn-bg: #fbf0d4;
   --ok-bg: #e4efe6;
@@ -398,7 +399,7 @@
 }
 .admin :focus-visible {
   outline: 2px solid var(--gold);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
 /* ---------- Dashboard ---------- */
