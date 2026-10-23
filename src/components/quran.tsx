@@ -152,7 +152,7 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
   const router = useRouter();
   const prev = surahs[surah.id - 2] ?? null;
   const next = surahs[surah.id] ?? null;
-  const [picking, setPicking] = useState<null | "surah" | "qari">(null);
+  const [picking, setPicking] = useState<null | "surah" | "qari" | "tampilan">(null);
   const text = useTextPrefs();
   const fallbackQari = qaris.some((q) => q.id === DEFAULT_QARI) ? DEFAULT_QARI : (qaris[0]?.id ?? DEFAULT_QARI);
   const prefs = useQuranPrefs(fallbackQari);
@@ -438,6 +438,20 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
   const status =
     recitation === undefined ? "Memuat murotal…" : recitation === null ? "Murotal gagal dimuat" : active ? `Ayat ${active} dari ${verses.length}` : `${verses.length} ayat`;
 
+  const readingOptions = (
+          <div className="doa-cats" role="group" aria-label="Tampilan bacaan">
+            <button type="button" aria-pressed={text.showArti} onClick={() => text.set({ showArti: !text.showArti })}>
+              Terjemahan
+            </button>
+            <button type="button" aria-pressed={text.showLatin} onClick={() => text.set({ showLatin: !text.showLatin })}>
+              Latin
+            </button>
+            <button type="button" aria-pressed={prefs.follow} onClick={() => prefs.set({ follow: !prefs.follow })}>
+              Ikuti bacaan
+            </button>
+          </div>
+  );
+
   return (
     <div className="qrn qrn-reader" style={textVars(text)}>
       <div className="qrn-reading-content" data-covered={listening || !!picking} data-chrome-hidden={controlsHidden}>
@@ -477,18 +491,11 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
               <span className="qrn-surah-label">Daftar surah</span>
               <Icon size={18}><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></Icon>
             </button>
-          </div>
-          <div className="doa-cats" role="group" aria-label="Tampilan bacaan">
-            <button type="button" aria-pressed={text.showArti} onClick={() => text.set({ showArti: !text.showArti })}>
-              Terjemahan
-            </button>
-            <button type="button" aria-pressed={text.showLatin} onClick={() => text.set({ showLatin: !text.showLatin })}>
-              Latin
-            </button>
-            <button type="button" aria-pressed={prefs.follow} onClick={() => prefs.set({ follow: !prefs.follow })}>
-              Ikuti bacaan
+            <button type="button" className="qrn-display-pick" onClick={() => setPicking("tampilan")} aria-haspopup="dialog" aria-label="Pengaturan tampilan bacaan" title="Tampilan bacaan">
+              <Icon size={18}><path d="M4 7h16M4 17h16M8 4v6M16 14v6" /></Icon>
             </button>
           </div>
+          {readingOptions}
         </div>
 
         {surah.bismillah && (
@@ -581,11 +588,16 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
       </div>
 
       {picking && (
-        <QuranDrawer title={picking === "surah" ? "Pilih surah" : "Pilih qari"} onClose={() => setPicking(null)}>
+        <QuranDrawer title={{ surah: "Pilih surah", qari: "Pilih qari", tampilan: "Tampilan bacaan" }[picking]} onClose={() => setPicking(null)}>
             {picking === "surah" ? (
               <SurahList surahs={surahs} current={surah.id} onPick={(id) => goTo(id, false, playing)} />
-            ) : (
+            ) : picking === "qari" ? (
               <QariList qaris={qaris} current={qari} onPick={changeQari} />
+            ) : (
+              <div className="qrn-display-options">
+                <p>Pilih teks yang ditampilkan dan aktifkan ikuti bacaan untuk mengikuti ayat yang sedang diputar.</p>
+                {readingOptions}
+              </div>
             )}
         </QuranDrawer>
       )}
