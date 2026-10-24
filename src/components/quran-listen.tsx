@@ -5,7 +5,7 @@ import { AMBIENTS, type AmbientId } from "@/lib/ambient";
 import { clock, paintFill, useAudioClock, type Clip } from "@/lib/audio-clock";
 import type { ListenBackground } from "@/lib/content";
 import type { Qari, Surah, Verse } from "@/lib/quran-types";
-import { QuranDrawer, QuranModeToggle, useModalFocus } from "./quran-ui";
+import { QuranDrawer, QuranModeNav, useModalFocus } from "./quran-ui";
 import { QariList } from "./qari-list";
 import { SurahList } from "./surah-list";
 
@@ -186,19 +186,19 @@ export function ListenView(p: Props) {
               </Icon>
             </button>
           )}
-          {p.onReadMode && <QuranModeToggle mode="dengar" onChange={(mode) => { if (mode === "baca") p.onReadMode?.(); }} />}
-          <button type="button" className={`lsn-chip lsn-ambient${p.ambient ? " on" : ""}`} onClick={() => setSheet("suara")} aria-haspopup="dialog">
+          {p.onReadMode && <QuranModeNav mode="dengar" onChange={(mode) => { if (mode === "baca") p.onReadMode?.(); }} />}
+          <button type="button" className={`lsn-chip lsn-ambient${p.ambient ? " on" : ""}`} onClick={() => setSheet("suara")} aria-haspopup="dialog" aria-label={`Suara latar: ${p.ambient ? ambientLabel : "Mati"}`} title={`Suara latar: ${p.ambient ? ambientLabel : "Mati"}`}>
             <AmbientIcon id={p.ambient} />
             <span className="lsn-chip-label">{ambientLabel}</span>
           </button>
           <span className="lsn-gap" />
-          <button type="button" className={`lsn-chip lsn-timer${p.sleep ? " on" : ""}`} onClick={() => setSheet("timer")} aria-haspopup="dialog" aria-label="Timer tidur">
+          <button type="button" className={`lsn-chip lsn-timer${p.sleep ? " on" : ""}`} onClick={() => setSheet("timer")} aria-haspopup="dialog" aria-label={p.sleep ? "Timer tidur aktif, atur timer" : "Atur timer tidur"} title={p.sleep ? "Timer tidur aktif" : "Timer tidur"}>
             <Icon size={18}>
               <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
             </Icon>
             <span className="lsn-chip-label"><SleepLabel sleep={p.sleep} end={`Akhir ${L.part}`} /></span>
           </button>
-          <button type="button" className="lsn-round" onClick={() => setSheet("tampilan")} aria-haspopup="dialog" aria-label="Pengaturan tampilan">
+          <button type="button" className={`lsn-round${p.sleep ? " timer-on" : ""}`} onClick={() => setSheet("tampilan")} aria-haspopup="dialog" aria-label={p.sleep ? "Pengaturan mode dengar, timer aktif" : "Pengaturan mode dengar"}>
             <Icon>
               <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
               <circle cx="12" cy="12" r="3" />
@@ -298,7 +298,7 @@ export function ListenView(p: Props) {
       </div>
 
       {sheet && (
-        <QuranDrawer dark title={{ suara: "Suara latar", timer: "Timer tidur", tampilan: "Pengaturan tampilan", surah: `Pilih ${L.part}`, qari: "Pilih qari" }[sheet]} onClose={() => setSheet(null)}>
+        <QuranDrawer dark title={{ suara: "Suara latar", timer: "Timer tidur", tampilan: "Pengaturan mode dengar", surah: `Pilih ${L.part}`, qari: "Pilih qari" }[sheet]} onClose={() => setSheet(null)}>
             {sheet === "suara" && (
               <>
                 <div className="lsn-options" role="group" aria-label="Suara latar">
@@ -367,6 +367,13 @@ export function ListenView(p: Props) {
             )}
             {sheet === "tampilan" && (
               <>
+                <div className="lsn-settings-shortcuts">
+                  <button type="button" onClick={() => setSheet("suara")}><AmbientIcon id={p.ambient} /><span>Suara latar<small>{p.ambient ? ambientLabel : "Mati"}</small></span></button>
+                  <button type="button" onClick={() => setSheet("timer")}>
+                    <Icon size={18}><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" /></Icon>
+                    <span>Timer tidur<small><SleepLabel sleep={p.sleep} end={`Akhir ${L.part}`} /></small></span>
+                  </button>
+                </div>
                 <h2>Tampilkan</h2>
                 <div className="lsn-options" role="group" aria-label="Teks yang ditampilkan">
                   {SHOW_OPTIONS.map((o) => (

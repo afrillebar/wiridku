@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode, type RefObject } from "react";
 import { nextReaderScroll, readerScrollStart } from "@/lib/reader-scroll";
 
@@ -51,6 +52,19 @@ export function QuranModeToggle({ mode, onChange }: { mode: "baca" | "dengar"; o
           {value === "baca" ? "Baca" : "Dengar"}
         </button>
       ))}
+    </div>
+  );
+}
+
+export function QuranModeNav({ mode, onChange }: { mode: "baca" | "dengar"; onChange: (mode: "baca" | "dengar") => void }) {
+  return (
+    <div className="qrn-mode-nav">
+      <Link href="/" className="qrn-home" aria-label="Kembali ke Beranda" title="Kembali ke Beranda">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10Z" />
+        </svg>
+      </Link>
+      <QuranModeToggle mode={mode} onChange={onChange} />
     </div>
   );
 }

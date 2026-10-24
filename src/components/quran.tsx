@@ -10,7 +10,7 @@ import { addListenSeconds, readQuranPlace, useQuranPlace, useQuranPrefs, useText
 import { DEFAULT_QARI, type Qari, type Recitation, type Surah, type Verse } from "@/lib/quran-types";
 import { ListenGoalCard } from "./listen-goal";
 import { ListenView, type Sleep } from "./quran-listen";
-import { QuranDrawer, QuranModeToggle, useReadingControls } from "./quran-ui";
+import { QuranDrawer, QuranModeNav, useReadingControls } from "./quran-ui";
 import { QariList } from "./qari-list";
 import { SurahList, matchSurah } from "./surah-list";
 
@@ -481,12 +481,7 @@ export function QuranReader({ surah, surahs, verses, qaris, backgrounds }: { sur
 
         <div className="qrn-tools" inert={controlsHidden}>
           <div className="qrn-toolbar-head">
-            <div className="qrn-mode-nav">
-              <Link href="/" className="qrn-home" aria-label="Kembali ke Beranda" title="Kembali ke Beranda">
-                <Icon><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10Z" /></Icon>
-              </Link>
-              <QuranModeToggle mode="baca" onChange={(mode) => { if (mode === "dengar") setListening(true); }} />
-            </div>
+            <QuranModeNav mode="baca" onChange={(mode) => { if (mode === "dengar") setListening(true); }} />
             <button type="button" className="qrn-surah-pick" onClick={() => setPicking("surah")} aria-haspopup="dialog" aria-label="Daftar surah">
               <span className="qrn-surah-label">Daftar surah</span>
               <Icon size={18}><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></Icon>

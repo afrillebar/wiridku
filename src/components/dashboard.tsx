@@ -5,6 +5,7 @@ import { useEffect, useMemo, type ReactNode } from "react";
 import { MENUS } from "@/lib/menus";
 import { useProgress, useReadingPlace } from "@/lib/progress";
 import { PrayerCard } from "./prayer-card";
+import { AyahOfDay } from "./ayah-of-day";
 
 export type DashboardPhase = { slug: string; title: string; cards: { slug: string; title: string; number: number | null }[] };
 
@@ -150,6 +151,8 @@ export function Dashboard({ phases, hidden }: { phases: DashboardPhase[]; hidden
           </Link>
         ))}
       </nav>
+
+      <AyahOfDay />
 
       <section className="today" aria-labelledby="today-title">
         <div className="today-head">

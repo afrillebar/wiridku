@@ -5109,21 +5109,26 @@ span.lsn-title-qari span {
 .lsn-top.with-mode {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto 44px;
-  gap: 8px;
+  gap: 12px;
+  padding: 12px;
 }
 .lsn-top.with-mode .lsn-gap {
   display: none;
 }
 .lsn-top.with-mode .quran-mode {
-  justify-self: start;
   min-width: 0;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 12px;
   border-color: rgba(255, 255, 255, 0.16);
   background: rgba(255, 255, 255, 0.06);
 }
 .lsn-top.with-mode .quran-mode button {
+  min-height: 36px;
   gap: 6px;
   padding: 0 12px;
-  font-size: 0.84rem;
+  border-radius: 9px;
+  font-size: 0.8rem;
 }
 .lsn-top.with-mode .lsn-chip {
   padding-right: 12px;
@@ -5207,34 +5212,70 @@ span.lsn-title-qari span {
 .quran-drawer .lsn-bgs button {
   aspect-ratio: 16 / 10;
 }
-@media (max-width: 620px) {
+@media (max-width: 679px) {
   .lsn-top.with-mode {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    row-gap: 10px;
-    padding: 10px;
-    border-radius: 24px;
+    grid-template-columns: minmax(0, 1fr) 40px 40px;
+    gap: 6px;
+    width: calc(100% - 16px);
+    margin-top: calc(4px + env(safe-area-inset-top));
+    padding: 8px;
+    border-radius: 16px;
   }
-  .lsn-top.with-mode > .quran-mode {
-    grid-area: 1 / 1 / 2 / 4;
-    justify-self: start;
+  .lsn-top.with-mode > .qrn-mode-nav {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 6px;
+  }
+  .lsn-top.with-mode .quran-mode {
     width: 100%;
-    max-width: 220px;
-  }
-  .lsn-top.with-mode > .lsn-round:last-child {
-    grid-area: 1 / 4;
-    justify-self: end;
-  }
-  .lsn-top.with-mode > .lsn-ambient {
-    grid-area: 2 / 1 / 3 / 3;
-  }
-  .lsn-top.with-mode > .lsn-timer {
-    grid-area: 2 / 3 / 3 / 5;
-    max-width: none;
+    min-width: 0;
+    gap: 2px;
+    padding: 2px;
+    border-radius: 10px;
   }
   .lsn-top.with-mode .quran-mode button {
+    min-width: 0;
+    min-height: 34px;
     gap: 4px;
-    padding: 0 6px;
-    font-size: 0.78rem;
+    padding: 0 4px;
+    border-radius: 8px;
+    font-size: 0.76rem;
+  }
+  .lsn-top.with-mode .quran-mode button svg {
+    flex: none;
+    width: 16px;
+    height: 16px;
+  }
+  .lsn-top.with-mode .qrn-home,
+  .lsn-top.with-mode > .lsn-chip,
+  .lsn-top.with-mode > .lsn-round {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    max-width: none;
+    padding: 0;
+    border-radius: 10px;
+  }
+  .lsn-top.with-mode > .lsn-timer,
+  .lsn-top.with-mode .lsn-chip-label {
+    display: none;
+  }
+  .lsn-top.with-mode > .lsn-chip.on::after,
+  .lsn-top.with-mode > .lsn-round.timer-on::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #a9d5bc;
+  }
+}
+@media (max-width: 360px) {
+  .lsn-top.with-mode .quran-mode button svg {
+    display: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -5511,4 +5552,136 @@ span.lsn-title-qari span {
   .qrn-reader .qrn-tools .quran-mode button svg {
     display: none;
   }
+}
+
+/* A quiet, local-date reminder beneath the home feature menu. */
+.daily-ayah {
+  margin: 20px 16px 0;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--card), color-mix(in srgb, var(--paper-alt) 45%, var(--card)));
+}
+.daily-ayah-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  color: var(--text-soft);
+}
+.daily-ayah-head h2 {
+  margin: 0;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+.daily-ayah-head svg {
+  flex: none;
+  color: var(--sage);
+}
+.daily-ayah-content,
+.daily-ayah-content blockquote,
+.daily-ayah-content p {
+  margin: 0;
+}
+.daily-ayah-content p {
+  color: var(--ink);
+  font-size: 1.05rem;
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+}
+.daily-ayah-content figcaption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  color: var(--text-soft);
+}
+.daily-ayah-content figcaption::before {
+  content: "";
+  flex: none;
+  width: 22px;
+  height: 1px;
+  background: var(--sage);
+}
+.daily-ayah-content cite {
+  font-size: 0.8rem;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.daily-ayah-placeholder {
+  display: grid;
+  gap: 12px;
+  min-height: 118px;
+  align-content: start;
+}
+.daily-ayah-placeholder span {
+  height: 12px;
+  border-radius: 6px;
+  background: var(--paper-alt);
+}
+.daily-ayah-placeholder span:last-child {
+  width: 58%;
+  margin-top: 8px;
+}
+@media (max-width: 480px) {
+  .daily-ayah {
+    padding: 18px;
+  }
+  .daily-ayah-content p {
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+}
+@media (min-width: 721px) {
+  .daily-ayah {
+    margin-right: 24px;
+    margin-left: 24px;
+  }
+}
+
+.lsn .qrn-home {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(40, 56, 50, 0.72);
+  color: #f4f7f5;
+}
+.lsn .qrn-home:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.lsn .qrn-home:focus-visible {
+  outline-color: #f4f7f5;
+}
+.lsn-settings-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.lsn-settings-shortcuts button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 64px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  text-align: left;
+}
+.lsn-settings-shortcuts button > svg {
+  flex: none;
+}
+.lsn-settings-shortcuts button > span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  font-size: 0.84rem;
+}
+.lsn-settings-shortcuts small {
+  font-size: 0.76rem;
+  opacity: 0.7;
 }
